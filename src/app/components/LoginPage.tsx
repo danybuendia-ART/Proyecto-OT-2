@@ -82,10 +82,9 @@ export function LoginPage() {
           </form>
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">Usuarios de demostración:</p>
+            <p className="text-sm text-gray-600 mb-2">Crear cuenta:</p>
             <div className="text-xs space-y-1 text-gray-700">
-              <div>📧 admin@example.com / 🔑 admin123</div>
-              <div>📧 user@example.com / 🔑 user123</div>
+              <div>¿No tienes un usuario? crea tu cuenta </div>
             </div>
           </div>
         </CardContent>

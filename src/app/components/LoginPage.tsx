@@ -21,11 +21,12 @@ export function LoginPage() {
     }
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    const user = login(email, password);
+    const user = await login(email, password);
+    console.log(user);
     if (user) {
       navigate('/');
     } else {

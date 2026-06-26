@@ -1,4 +1,4 @@
-import { apiRequest } from "../apiClient.js";
+import { apiRequest, decryptData } from "../apiClient.js";
 
 export interface User {
   id: string;
@@ -6,16 +6,14 @@ export interface User {
   name: string;
 }
 
-export interface LoginPayload  {
+export interface LoginPayload {
   action: string,
   email: string,
   pass: string
 }
 
-export const login = (email: string, password: string): User | null => {
-  console.log("datos obtenidos: ", email, password);
-  sendServer(email, password);
-  return null;
+export const login = async (email: string, password: string) => {
+  return await sendServer(email, password);
 };
 
 async function sendServer(email: string, pass: string) {
@@ -28,12 +26,13 @@ async function sendServer(email: string, pass: string) {
   // 🚀 apiRequest ya se encarga de cifrar
   const response = await apiRequest("usuarios", info, "POST");
 
-  if (response?.warn) {
-    return response.warn;
+  if (response) {
+    const responseDecrypt = decryptData(response.encryptedResponse);
+
+    localStorage.setItem("user", JSON.stringify(responseDecrypt));
+    return true;
   } else {
-    const { ...userwithoutPassword } = response;
-    localStorage.setItem("user", JSON.stringify(userwithoutPassword));
-    return userwithoutPassword;
+    return false;
   }
 }
 

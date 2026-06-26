@@ -18,7 +18,6 @@ export async function apiRequest(endpoint, dataArray = null, method = "POST") {
       const plainText = JSON.stringify(dataArray);
       const encrypted = CryptoJS.AES.encrypt(plainText, SECRET_KEY).toString();
 
-      console.log("datos cifrados: ",encrypted)
       options.body = JSON.stringify({ payload: encrypted });
     }
 
@@ -33,4 +32,11 @@ export async function apiRequest(endpoint, dataArray = null, method = "POST") {
     console.error("Error en apiRequest:", error);
     throw error;
   }
+}
+
+// 🔓 Función para descifrar datos
+export function decryptData(encryptedText) {
+  const bytes = CryptoJS.AES.decrypt(encryptedText, SECRET_KEY);
+  const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+  return JSON.parse(decrypted);
 }

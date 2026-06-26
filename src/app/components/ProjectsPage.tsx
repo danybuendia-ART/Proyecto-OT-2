@@ -88,7 +88,7 @@ export function ProjectsPage() {
           <h2 className="text-3xl font-semibold">Mis Proyectos</h2>
           <p className="text-gray-500 mt-1">Gestiona tus proyectos y tareas</p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -96,6 +96,7 @@ export function ProjectsPage() {
               Nuevo Proyecto
             </Button>
           </DialogTrigger>
+
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
@@ -103,30 +104,37 @@ export function ProjectsPage() {
                 Ingresa los detalles del proyecto
               </DialogDescription>
             </DialogHeader>
+
             <form onSubmit={handleCreateProject} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre del Proyecto</Label>
                 <Input
                   id="name"
                   value={newProject.name}
-                  onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewProject({ ...newProject, name: e.target.value })
+                  }
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="description">Descripción</Label>
                 <Textarea
                   id="description"
                   value={newProject.description}
-                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewProject({ ...newProject, description: e.target.value })
+                  }
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="status">Estado</Label>
                 <Select
                   value={newProject.status}
-                  onValueChange={(value: Project['status']) => 
+                  onValueChange={(value: Project["status"]) =>
                     setNewProject({ ...newProject, status: value })
                   }
                 >
@@ -140,8 +148,13 @@ export function ProjectsPage() {
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex gap-2 justify-end">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancelar
                 </Button>
                 <Button type="submit">Crear Proyecto</Button>
@@ -167,8 +180,8 @@ export function ProjectsPage() {
             const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
             return (
-              <Card 
-                key={project.id} 
+              <Card
+                key={project.id}
                 className="hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => navigate(`/project/${project.id}`)}
               >
@@ -195,14 +208,14 @@ export function ProjectsPage() {
                       {getStatusLabel(project.status)}
                     </Badge>
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-gray-600">Progreso de Tareas</span>
                       <span className="font-medium">{completedTasks}/{totalTasks}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
                         style={{ width: `${progress}%` }}
                       />

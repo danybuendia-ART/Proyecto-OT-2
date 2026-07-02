@@ -22,6 +22,7 @@ export function LoginPage() {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+
   useEffect(() => {
     if (isAuthenticated()) {
       navigate('/');
@@ -30,13 +31,17 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
-    const user = await login(email, password);
+    setError('');
+    try{
+          const user = await login(email, password);
     if (user) {
       navigate('/');
     } else {
       setError('Credenciales incorrectas.');
+    }
+    }catch (error) {
+      setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
     }
   };
   const createAccountRef = useRef<HTMLButtonElement>(null);
@@ -56,10 +61,8 @@ export function LoginPage() {
       createAccountRef.current?.classList.remove("hidden");
       formCreateAccountRef.current?.classList.add("hidden");
 
-      setEmail(emailRegister);
-      setPassword(passwordRegister);
-
-      handleSubmit(e);
+      await login(emailRegister, passwordRegister);
+      navigate('/');
     } else {
       setErrorRegister('Error al registrar el usuario. Por favor, intenta de nuevo.');
     }

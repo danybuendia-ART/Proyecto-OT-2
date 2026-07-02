@@ -39,7 +39,7 @@ export const register = async (correo: string, pass: string, nombre: string) => 
   if (responseDecrypt.warn) {
     return false;
   }
-  return responseDecrypt.message;
+  return responseDecrypt;
 }
 async function sendServer(email: string, pass: string) {
   const info: LoginPayload = {

@@ -165,8 +165,8 @@ export function AccountPage() {
               <User className="w-7 h-7 text-white" />
             </div>
             <div>
-              <p className="text-xl font-semibold">{user?.name}</p>
-              <p className="text-gray-500">{user?.email}</p>
+              <p className="text-xl font-semibold">{user?.nombre}</p>
+              <p className="text-gray-500">{user?.correo}</p>
               <Badge variant="secondary" className="mt-1">Administrador</Badge>
             </div>
           </div>

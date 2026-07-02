@@ -1,14 +1,15 @@
 import { apiRequest, decryptData } from "../apiClient.js";
 
 export interface User {
-  id: string;
-  email: string;
-  name: string;
+  id: number;
+  correo: string;
+  nombre: string;
+  permiso: number;
 }
 
 export interface LoginPayload {
   action: string,
-  email: string,
+  correo: string,
   pass: string
 }
 
@@ -49,19 +50,20 @@ async function sendServer(email: string, pass: string) {
 
   // 🚀 apiRequest ya se encarga de cifrar
   const response = await apiRequest("usuarios", info, "POST");
-
-  if (response) {
-    const responseDecrypt = decryptData(response.encryptedResponse);
-
-    localStorage.setItem("user", JSON.stringify(responseDecrypt));
-    return true;
-  } else {
+  console.log(response);
+  if (response.warn) {
     return false;
+
+  } else if (response) {
+    //const responseDecrypt = decryptData(response.encryptedResponse);
+    console.log(response);
+    localStorage.setItem("user", JSON.stringify(response));
+    return true;
   }
 }
 
 export const logout = () => {
-  localStorage.removeItem("user");
+  localStorage.clear();
 };
 
 export const getCurrentUser = (): User | null => {

@@ -33,11 +33,10 @@ export function LoginPage() {
     setError('');
 
     const user = await login(email, password);
-    console.log(user);
     if (user) {
       navigate('/');
     } else {
-      setError('Credenciales incorrectas. Intenta con admin@example.com / admin123');
+      setError('Credenciales incorrectas.');
     }
   };
   const createAccountRef = useRef<HTMLButtonElement>(null);
@@ -59,6 +58,7 @@ export function LoginPage() {
 
       setEmail(emailRegister);
       setPassword(passwordRegister);
+
       handleSubmit(e);
     } else {
       setErrorRegister('Error al registrar el usuario. Por favor, intenta de nuevo.');
@@ -108,7 +108,7 @@ export function LoginPage() {
               </Alert>
             )}
 
-            
+
             <Button type="submit" className="w-full">
               Ingresar
             </Button>

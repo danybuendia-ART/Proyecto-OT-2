@@ -119,7 +119,7 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
           type: file.type,
           dataUrl,
           size: file.size,
-          uploadedBy: user?.name ?? 'Desconocido',
+          uploadedBy: user?.nombre ?? 'Desconocido',
         });
         toast.success(`"${file.name}" subido correctamente`);
       }

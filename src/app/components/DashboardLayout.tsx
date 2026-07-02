@@ -77,14 +77,14 @@ export function DashboardLayout() {
                 <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-blue-600" />
                 </div>
-                <span className="hidden sm:inline text-sm">{user?.name}</span>
+                <span className="hidden sm:inline text-sm">{user?.nombre}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-gray-500 text-xs" disabled>
-                {user?.email}
+                {user?.correo}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/account')}>
                 <BarChart3 className="w-4 h-4 mr-2" />

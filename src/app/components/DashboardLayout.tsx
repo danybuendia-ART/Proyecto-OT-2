@@ -72,7 +72,7 @@ export function DashboardLayout() {
 
           {/* User menu */}
           <DropdownMenu>
-            <DropdownMenuTrigger onClick={() => navigate('/account')}>
+            <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-blue-600" />

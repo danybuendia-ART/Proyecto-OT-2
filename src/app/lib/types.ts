@@ -36,6 +36,43 @@ export interface Material {
   updatedAt: Date;
 }
 
+export interface OvertimeRecord {
+  id: string;
+  weekStart: Date;
+  weekEnd: Date;
+  hours: number;
+  projectId?: string;
+  notes?: string;
+}
+
+export interface Certification {
+  id: string;
+  name: string;
+  issuedBy: string;
+  issuedDate: Date;
+  expiryDate?: Date;
+  status: 'vigente' | 'por vencer' | 'vencido';
+  category: string;
+}
+
+export interface Employee {
+  id: string;
+  employeeNumber: string;
+  name: string;
+  position: string;
+  department: string;
+  email: string;
+  phone: string;
+  address?: string;
+  startDate: Date;
+  birthDate?: Date;
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  status: 'activo' | 'inactivo';
+  certifications: Certification[];
+  overtimeRecords: OvertimeRecord[];
+}
+
 export const DEMO_WORKERS = [
   'Carlos García',
   'María López',

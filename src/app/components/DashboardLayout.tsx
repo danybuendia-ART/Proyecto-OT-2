@@ -9,20 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { LayoutDashboard, LogOut, User, BarChart3, CalendarDays, FolderOpen, ChartNoAxesCombined, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, LogOut, User, BarChart3, CalendarDays, FolderOpen, ChartNoAxesCombined, ShoppingCart, Users } from 'lucide-react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Proyectos', icon: FolderOpen },
   { to: '/dashboard', label: 'Avance porcentual', icon: ChartNoAxesCombined },
   { to: '/calendar', label: 'Calendario', icon: CalendarDays },
   { to: '/purchases', label: 'Compras', icon: ShoppingCart },
+  { to: '/human-capital', label: 'Capital Humano', icon: Users },
 ];
 
 export function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const user : any = getCurrentUser();
-  
+  const user: any = getCurrentUser();
+
   const handleLogout = () => {
     logout();
     navigate('/login');

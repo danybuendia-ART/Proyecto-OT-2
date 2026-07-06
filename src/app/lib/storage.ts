@@ -471,3 +471,221 @@ export const deleteMaterial = (id: string) => {
   const materials = getMaterials().filter(m => m.id !== id);
   saveMaterials(materials);
 };
+
+// Empleados y Capital Humano
+//este sistema sera complementado con checador a futuro, para que los empleados puedan registrar su asistencia y horas trabajadas.
+// Employees / Human Capital
+import { Employee } from './types';
+
+const EMPLOYEES_STORAGE_KEY = 'employees';
+const EMPLOYEES_DATA_VERSION = 'v1';
+
+if (localStorage.getItem('employees_data_version') !== EMPLOYEES_DATA_VERSION) {
+  localStorage.removeItem(EMPLOYEES_STORAGE_KEY);
+  localStorage.setItem('employees_data_version', EMPLOYEES_DATA_VERSION);
+}
+
+const fri = (iso: string) => new Date(iso);
+const thu = (iso: string) => new Date(iso);
+
+const INITIAL_EMPLOYEES: Employee[] = [
+  {
+    id: 'e1',
+    employeeNumber: 'EMP-001',
+    name: 'Carlos García',
+    position: 'Jefe de Obra',
+    department: 'Construcción',
+    email: 'carlos.garcia@empresa.com',
+    phone: '555-100-2001',
+    address: 'Av. Reforma 120, Col. Centro, CDMX',
+    startDate: new Date('2020-03-15'),
+    birthDate: new Date('1985-07-22'),
+    emergencyContact: 'Laura García',
+    emergencyPhone: '555-100-9001',
+    status: 'activo',
+    certifications: [
+      { id: 'c1-1', name: 'Seguridad en Obra', issuedBy: 'IMSS', issuedDate: new Date('2023-01-10'), expiryDate: new Date('2026-01-10'), status: 'vigente', category: 'Seguridad' },
+      { id: 'c1-2', name: 'Operador de Maquinaria Pesada', issuedBy: 'SCT', issuedDate: new Date('2022-06-15'), expiryDate: new Date('2025-06-15'), status: 'vencido', category: 'Operación' },
+      { id: 'c1-3', name: 'Primeros Auxilios', issuedBy: 'Cruz Roja', issuedDate: new Date('2024-03-01'), expiryDate: new Date('2026-03-01'), status: 'vigente', category: 'Seguridad' },
+    ],
+    overtimeRecords: [
+      { id: 'ot1-1', weekStart: fri('2026-06-20'), weekEnd: thu('2026-06-26'), hours: 6, projectId: '2', notes: 'Colada de losa urgente' },
+      { id: 'ot1-2', weekStart: fri('2026-06-27'), weekEnd: thu('2026-07-03'), hours: 4, projectId: '2' },
+    ],
+  },
+  {
+    id: 'e2',
+    employeeNumber: 'EMP-002',
+    name: 'María López',
+    position: 'Diseñadora UX',
+    department: 'Diseño',
+    email: 'maria.lopez@empresa.com',
+    phone: '555-100-2002',
+    address: 'Calle Insurgentes 45, Col. Roma, CDMX',
+    startDate: new Date('2021-08-01'),
+    birthDate: new Date('1990-02-14'),
+    emergencyContact: 'Roberto López',
+    emergencyPhone: '555-100-9002',
+    status: 'activo',
+    certifications: [
+      { id: 'c2-1', name: 'Adobe Certified Professional', issuedBy: 'Adobe', issuedDate: new Date('2023-09-01'), expiryDate: new Date('2026-09-01'), status: 'vigente', category: 'Diseño' },
+      { id: 'c2-2', name: 'Google UX Design', issuedBy: 'Google', issuedDate: new Date('2022-11-20'), status: 'vigente', category: 'UX' },
+    ],
+    overtimeRecords: [
+      { id: 'ot2-1', weekStart: fri('2026-06-27'), weekEnd: thu('2026-07-03'), hours: 3, projectId: '1', notes: 'Entrega de mockups' },
+    ],
+  },
+  {
+    id: 'e3',
+    employeeNumber: 'EMP-003',
+    name: 'Juan Martínez',
+    position: 'Desarrollador Senior',
+    department: 'Tecnología',
+    email: 'juan.martinez@empresa.com',
+    phone: '555-100-2003',
+    address: 'Blvd. Adolfo Ruiz Cortines 890, CDMX',
+    startDate: new Date('2019-11-01'),
+    birthDate: new Date('1988-05-30'),
+    emergencyContact: 'Patricia Martínez',
+    emergencyPhone: '555-100-9003',
+    status: 'activo',
+    certifications: [
+      { id: 'c3-1', name: 'AWS Solutions Architect', issuedBy: 'Amazon', issuedDate: new Date('2024-01-15'), expiryDate: new Date('2027-01-15'), status: 'vigente', category: 'Cloud' },
+      { id: 'c3-2', name: 'Scrum Master', issuedBy: 'Scrum Alliance', issuedDate: new Date('2022-04-10'), expiryDate: new Date('2025-04-10'), status: 'por vencer', category: 'Metodología' },
+      { id: 'c3-3', name: 'Docker & Kubernetes', issuedBy: 'CNCF', issuedDate: new Date('2023-07-20'), status: 'vigente', category: 'Cloud' },
+    ],
+    overtimeRecords: [
+      { id: 'ot3-1', weekStart: fri('2026-06-20'), weekEnd: thu('2026-06-26'), hours: 8, projectId: '1', notes: 'Deploy de emergencia' },
+      { id: 'ot3-2', weekStart: fri('2026-06-27'), weekEnd: thu('2026-07-03'), hours: 5, projectId: '1' },
+    ],
+  },
+  {
+    id: 'e4',
+    employeeNumber: 'EMP-004',
+    name: 'Ana Rodríguez',
+    position: 'Project Manager',
+    department: 'Administración',
+    email: 'ana.rodriguez@empresa.com',
+    phone: '555-100-2004',
+    address: 'Paseo de la Reforma 222, Col. Cuauhtémoc, CDMX',
+    startDate: new Date('2018-06-01'),
+    birthDate: new Date('1983-11-08'),
+    emergencyContact: 'Miguel Rodríguez',
+    emergencyPhone: '555-100-9004',
+    status: 'activo',
+    certifications: [
+      { id: 'c4-1', name: 'PMP - Project Management', issuedBy: 'PMI', issuedDate: new Date('2021-03-15'), expiryDate: new Date('2027-03-15'), status: 'vigente', category: 'Gestión' },
+      { id: 'c4-2', name: 'ITIL Foundation', issuedBy: 'Axelos', issuedDate: new Date('2020-09-01'), status: 'vigente', category: 'Gestión' },
+      { id: 'c4-3', name: 'Lean Six Sigma Green Belt', issuedBy: 'ASQ', issuedDate: new Date('2023-02-28'), expiryDate: new Date('2026-02-28'), status: 'vigente', category: 'Calidad' },
+    ],
+    overtimeRecords: [],
+  },
+  {
+    id: 'e5',
+    employeeNumber: 'EMP-005',
+    name: 'Pedro Sánchez',
+    position: 'Técnico Electricista',
+    department: 'Construcción',
+    email: 'pedro.sanchez@empresa.com',
+    phone: '555-100-2005',
+    address: 'Calle Tepeyac 77, Col. Lindavista, CDMX',
+    startDate: new Date('2022-01-10'),
+    birthDate: new Date('1992-09-17'),
+    emergencyContact: 'Carmen Sánchez',
+    emergencyPhone: '555-100-9005',
+    status: 'activo',
+    certifications: [
+      { id: 'c5-1', name: 'Instalaciones Eléctricas NOM', issuedBy: 'CONOCER', issuedDate: new Date('2023-05-12'), expiryDate: new Date('2026-05-12'), status: 'vigente', category: 'Técnico' },
+      { id: 'c5-2', name: 'Trabajo en Alturas', issuedBy: 'IMSS', issuedDate: new Date('2024-02-01'), expiryDate: new Date('2025-02-01'), status: 'vencido', category: 'Seguridad' },
+    ],
+    overtimeRecords: [
+      { id: 'ot5-1', weekStart: fri('2026-06-27'), weekEnd: thu('2026-07-03'), hours: 10, projectId: '2', notes: 'Instalación eléctrica planta baja' },
+    ],
+  },
+];
+
+const parseEmployee = (e: any): Employee => ({
+  ...e,
+  startDate: new Date(e.startDate),
+  birthDate: e.birthDate ? new Date(e.birthDate) : undefined,
+  certifications: e.certifications.map((c: any) => ({
+    ...c,
+    issuedDate: new Date(c.issuedDate),
+    expiryDate: c.expiryDate ? new Date(c.expiryDate) : undefined,
+  })),
+  overtimeRecords: e.overtimeRecords.map((o: any) => ({
+    ...o,
+    weekStart: new Date(o.weekStart),
+    weekEnd: new Date(o.weekEnd),
+  })),
+});
+
+export const getEmployees = (): Employee[] => {
+  const stored = localStorage.getItem(EMPLOYEES_STORAGE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored).map(parseEmployee);
+    } catch {
+      return INITIAL_EMPLOYEES;
+    }
+  }
+  localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(INITIAL_EMPLOYEES));
+  return INITIAL_EMPLOYEES;
+};
+
+const saveEmployees = (employees: Employee[]) => {
+  localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(employees));
+};
+
+export const getEmployee = (id: string): Employee | undefined =>
+  getEmployees().find(e => e.id === id);
+
+export const addEmployee = (data: Omit<Employee, 'id' | 'certifications' | 'overtimeRecords'>): Employee => {
+  const employees = getEmployees();
+  const newEmp: Employee = {
+    ...data,
+    id: `e${Date.now()}`,
+    certifications: [],
+    overtimeRecords: [],
+  };
+  employees.push(newEmp);
+  saveEmployees(employees);
+  return newEmp;
+};
+
+export const updateEmployee = (id: string, updates: Partial<Employee>) => {
+  const employees = getEmployees();
+  const idx = employees.findIndex(e => e.id === id);
+  if (idx !== -1) {
+    employees[idx] = { ...employees[idx], ...updates };
+    saveEmployees(employees);
+  }
+};
+
+export const deleteEmployee = (id: string) => {
+  saveEmployees(getEmployees().filter(e => e.id !== id));
+};
+
+export const addOvertimeRecord = (employeeId: string, record: Omit<Employee['overtimeRecords'][0], 'id'>) => {
+  const employees = getEmployees();
+  const emp = employees.find(e => e.id === employeeId);
+  if (!emp) return;
+  emp.overtimeRecords.push({ ...record, id: `ot${Date.now()}` });
+  saveEmployees(employees);
+};
+
+export const addCertification = (employeeId: string, cert: Omit<Employee['certifications'][0], 'id'>) => {
+  const employees = getEmployees();
+  const emp = employees.find(e => e.id === employeeId);
+  if (!emp) return;
+  emp.certifications.push({ ...cert, id: `cert${Date.now()}` });
+  saveEmployees(employees);
+};
+
+export const deleteCertification = (employeeId: string, certId: string) => {
+  const employees = getEmployees();
+  const emp = employees.find(e => e.id === employeeId);
+  if (!emp) return;
+  emp.certifications = emp.certifications.filter(c => c.id !== certId);
+  saveEmployees(employees);
+};

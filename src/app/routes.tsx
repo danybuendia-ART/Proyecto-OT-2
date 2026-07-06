@@ -8,6 +8,8 @@ import { AccountPage } from "./components/AccountPage";
 import { CalendarPage } from "./components/CalendarPage";
 import { DashboardOverviewPage } from "./components/DashboardOverviewPage";
 import { PurchasesPage } from "./components/PurchasesPage";
+import { HumanCapitalPage } from "./components/HumanCapitalPage";
+import { EmployeeDetailPage } from "./components/EmployeeDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -44,6 +46,14 @@ export const router = createBrowserRouter([
           {
             path: "purchases",
             Component: PurchasesPage,
+          },
+          {
+            path: "human-capital",
+            Component: HumanCapitalPage,
+          },
+          {
+            path: "human-capital/:employeeId",
+            Component: EmployeeDetailPage,
           },
         ],
       },

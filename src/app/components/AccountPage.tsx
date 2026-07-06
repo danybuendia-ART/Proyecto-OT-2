@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { getProjects, resetDemoData } from '../lib/storage';
+import { useMemo, useState, useEffect } from 'react';
+import { fetchProjects, getProjects, resetDemoData } from '../lib/storage';
 import { getCurrentUser } from '../lib/auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Badge } from './ui/badge';
@@ -43,7 +43,15 @@ const WORKER_COLORS = [
 
 export function AccountPage() {
   const user = getCurrentUser();
-  const [projects, setProjects] = useState(() => getProjects());
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await fetchProjects();
+      setProjects(data);
+    };
+    load();
+  }, []);
 
   const handleResetData = () => {
     resetDemoData();

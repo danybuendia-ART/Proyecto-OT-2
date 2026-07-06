@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { getProjects, addProject, deleteProject } from '../lib/storage';
+import { fetchProjects, getProjects, addProject, deleteProject } from '../lib/storage';
 import { Project } from '../lib/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -27,16 +27,17 @@ export function ProjectsPage() {
     loadProjects();
   }, []);
 
-  const loadProjects = () => {
-    setProjects(getProjects());
+  const loadProjects = async () => {
+    const data = await fetchProjects();
+    setProjects(data);
   };
 
-  const handleCreateProject = (e: React.FormEvent) => {
+  const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    addProject(newProject);
+    await addProject(newProject);
     setIsDialogOpen(false);
     setNewProject({ name: '', description: '', status: 'active' });
-    loadProjects();
+    await loadProjects();
     toast.success('Proyecto creado exitosamente');
   };
 
@@ -137,6 +138,7 @@ export function ProjectsPage() {
                   onValueChange={(value: Project["status"]) =>
                     setNewProject({ ...newProject, status: value })
                   }
+                  disabled
                 >
                   <SelectTrigger>
                     <SelectValue />

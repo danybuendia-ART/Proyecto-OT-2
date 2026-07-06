@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMaterials, getProjects, addMaterial, updateMaterial, deleteMaterial } from '../lib/storage';
+import { getMaterials, fetchProjects, getProjects, addMaterial, updateMaterial, deleteMaterial } from '../lib/storage';
 import { Material, MaterialPriority, Project } from '../lib/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -57,7 +57,12 @@ export function PurchasesPage() {
   });
 
   useEffect(() => {
-    loadData();
+    const load = async () => {
+      setMaterials(getMaterials());
+      const data = await fetchProjects();
+      setProjects(data);
+    };
+    load();
   }, []);
 
   const loadData = () => {

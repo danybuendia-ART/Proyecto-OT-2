@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { getProject, addTask, updateTask, deleteTask, updateProject } from '../lib/storage';
+import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject } from '../lib/storage';
 import { Project, Task, DEMO_WORKERS } from '../lib/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -40,14 +40,35 @@ export function ProjectDetailPage() {
   });
 
   useEffect(() => {
-    loadProject();
-  }, [projectId]);
+    const load = async () => {
+      if (!projectId) return;
 
-  const loadProject = () => {
-    if (projectId) {
-      const proj = getProject(projectId);
+      const proj = await fetchProject(projectId);
       if (proj) {
         setProject(proj);
+        return;
+      }
+
+      const fallback = getProject(projectId);
+      if (fallback) {
+        setProject(fallback);
+        return;
+      }
+
+      navigate('/');
+    };
+    load();
+  }, [projectId, navigate]);
+
+  const loadProject = async () => {
+    if (!projectId) return;
+    const proj = await fetchProject(projectId);
+    if (proj) {
+      setProject(proj);
+    } else {
+      const fallback = getProject(projectId);
+      if (fallback) {
+        setProject(fallback);
       } else {
         navigate('/');
       }

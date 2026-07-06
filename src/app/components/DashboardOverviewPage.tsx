@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { getProjects } from '../lib/storage';
+import { fetchProjects } from '../lib/storage';
 import { Project } from '../lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
@@ -136,7 +136,15 @@ function RadialProgress({ value, color, label }: { value: number; color: string;
 
 export function DashboardOverviewPage() {
   const navigate = useNavigate();
-  const allProjects = useMemo(() => getProjects(), []);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await fetchProjects();
+      setAllProjects(data);
+    };
+    load();
+  }, []);
 
   // ── Date filter state ────────────────────────────────────────────────────
   const [startDate, setStartDate] = useState('');

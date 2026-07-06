@@ -1,4 +1,6 @@
 import { Project, Task } from './types';
+import { apiRequest, decryptData } from '../apiClient';
+import { getCurrentUser } from '../lib/auth';
 
 const STORAGE_KEY = 'projects';
 const DATA_VERSION = 'v3'; // bump this to reset stale demo data
@@ -145,19 +147,59 @@ const INITIAL_PROJECTS: Project[] = [
 ];
 
 const parseProject = (p: any): Project => ({
-  ...p,
-  createdAt: new Date(p.createdAt),
-  completedAt: p.completedAt ? new Date(p.completedAt) : undefined,
-  tasks: p.tasks.map((t: any) => ({
-    ...t,
-    createdAt: new Date(t.createdAt),
-    completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
-    dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
-  })),
+  id: String(p.id),
+  name: p.name ?? p.nombre ?? '',
+  description: p.description ?? p.descripcion ?? '',
+  status: (p.status ?? p.estatus ?? 'active') as Project['status'],
+  createdAt: new Date(p.createdAt ?? p.fecha_inicio ?? Date.now()),
+  completedAt: p.completedAt
+    ? new Date(p.completedAt)
+    : p.fecha_finalizado
+    ? new Date(p.fecha_finalizado)
+    : undefined,
+  tasks: Array.isArray(p.tasks)
+    ? p.tasks.map((t: any) => ({
+        ...t,
+        id: String(t.id),
+        title: t.title ?? t.name ?? '',
+        description: t.description ?? t.descripcion ?? '',
+        unit: t.unit ?? '',
+        quantity: Number(t.quantity ?? 0),
+        completed: Boolean(t.completed),
+        createdAt: new Date(t.createdAt),
+        completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
+        dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
+        assignedTo: t.assignedTo ?? t.asignadoA ?? undefined,
+      }))
+    : [],
 });
+
+const normalizeProjectsResponse = (response: any): any[] => {
+  if (Array.isArray(response)) return response;
+  if (response?.data) return response.data;
+  if (response?.proyectos) return response.proyectos;
+  return [];
+};
+
+export const fetchProjects = async (): Promise<Project[]> => {
+  try {
+    const response: any = await apiRequest('proyectos', null, 'GET');
+    const projects = normalizeProjectsResponse(response);
+    return projects.map(parseProject);
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return getProjects();
+  }
+};
+
+export const fetchProject = async (id: string): Promise<Project | undefined> => {
+  const projects = await fetchProjects();
+  return projects.find(p => p.id === id);
+};
 
 export const getProjects = (): Project[] => {
   const stored = localStorage.getItem(STORAGE_KEY);
+
   if (stored) {
     try {
       return JSON.parse(stored).map(parseProject);
@@ -177,8 +219,28 @@ export const getProject = (id: string): Project | undefined => {
   return getProjects().find(p => p.id === id);
 };
 
-export const addProject = (project: Omit<Project, 'id' | 'createdAt' | 'tasks'>): Project => {
-  const projects = getProjects();
+export const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'tasks'>) => {
+  const user :any = getCurrentUser();
+  const informacion: object = {
+    action: "create",
+    nombre: project.name,
+    descripcion: project.description,
+    estatus: project.status,
+    fk_usuario: user[0]?.id
+  }
+
+  const response: any = await apiRequest("proyectos",informacion, "POST");
+
+  if(response){
+    const decryptedResponse = decryptData(response);
+    console.log(decryptedResponse);
+
+    return decryptedResponse.message;
+  }else{
+    console.log("Error al crear el proyecto");
+    return null;
+  }
+  /*const projects = getProjects();
   const newProject: Project = {
     ...project,
     id: Date.now().toString(),
@@ -187,7 +249,7 @@ export const addProject = (project: Omit<Project, 'id' | 'createdAt' | 'tasks'>)
   };
   projects.push(newProject);
   saveProjects(projects);
-  return newProject;
+  return newProject;*/
 };
 
 export const updateProject = (id: string, updates: Partial<Project>) => {

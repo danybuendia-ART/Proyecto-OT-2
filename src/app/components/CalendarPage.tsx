@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
-import { getProjects } from '../lib/storage';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { fetchProjects } from '../lib/storage';
 import { getCurrentUser } from '../lib/auth';
 import { Project, Task } from '../lib/types';
 import {
@@ -329,8 +329,15 @@ export function CalendarPage() {
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState<number | null>(today.getDate());
   const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
 
-  const projects = useMemo(() => getProjects(), []);
+  useEffect(() => {
+    const load = async () => {
+      const data = await fetchProjects();
+      setProjects(data);
+    };
+    load();
+  }, []);
 
   // Map projectId -> color index (stable across renders)
   const projectColorMap = useMemo(() => {

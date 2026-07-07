@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { getCurrentUser, logout } from '../lib/auth';
 import { Button } from './ui/button';
+import logo from '../img/SIR-PROJECTS2.png';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,11 +44,11 @@ export function DashboardLayout() {
             className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0"
             onClick={() => navigate('/')}
           >
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-              <LayoutDashboard className="w-5 h-5 text-white" />
+            <div className="w-32 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+              <img src={logo} alt='logo' className='w-100 h-20'/>
             </div>
             <div className="text-left hidden sm:block">
-              <h1 className="font-semibold text-sm leading-tight">Gestión de Proyectos</h1>
+              <h1 className="font-semibold text-sm leading-tight">Sistema Manteniniento OT SIRAGS</h1>
               <p className="text-xs text-gray-400">Bienvenid@ {user[0]?.nombre}</p>
             </div>
           </button>

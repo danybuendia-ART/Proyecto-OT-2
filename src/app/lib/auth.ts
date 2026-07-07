@@ -78,6 +78,35 @@ export const getCurrentUser = (): User | null => {
   return null;
 };
 
+export const setCurrentUser = (user: User) => {
+  localStorage.setItem("user", JSON.stringify(user));
+};
+
+export const updateCurrentUser = async (updates: Partial<User>): Promise<User | null> => {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return null;
+
+  const payload = {
+    action: 'update',
+    id: currentUser.id,
+    ...updates,
+  };
+
+  try {
+    const response = await apiRequest('usuarios', payload, 'POST');
+    const decryptedResponse = decryptData(response);
+    if (decryptedResponse && typeof decryptedResponse === 'object') {
+      const updatedUser = { ...currentUser, ...decryptedResponse };
+      setCurrentUser(updatedUser);
+      return updatedUser;
+    }
+  } catch (error) {
+    console.error('Error updating current user:', error);
+  }
+
+  return null;
+};
+
 export const isAuthenticated = (): boolean => {
   return getCurrentUser() !== null;
 };

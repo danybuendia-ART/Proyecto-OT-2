@@ -38,9 +38,13 @@ function formatDate(d: Date) {
     return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
 }
 
+function safeString(value: unknown) {
+    return String(value ?? '');
+}
+
 // ─── Badge component (used in dialog) ─────────────────────────────────────────
 function EmployeeBadge({ employee }: { employee: Employee }) {
-    const initials = employee.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const initials = safeString(employee.name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     return (
         <div className="w-64 mx-auto select-none">
             {/* Card */}
@@ -129,7 +133,15 @@ export function HumanCapitalPage() {
     const [currentWeekStart, setCurrentWeekStart] = useState(() => getWeekStart(new Date()));
     const [overtimeInputs, setOvertimeInputs] = useState<Record<string, Record<string, string>>>({});
 
-    const load = () => setEmployees(getEmployees());
+    const load = async () => {
+        try {
+            const data = await getEmployees();
+            setEmployees(data);
+        } catch (error) {
+            console.error('Error cargando empleados:', error);
+        }
+    };
+
     useEffect(() => { load(); }, []);
 
     const weekEnd = getWeekEnd(currentWeekStart);
@@ -171,13 +183,18 @@ export function HumanCapitalPage() {
         toast.success(`Horas extra guardadas para ${employee.name}`);
     };
 
-    const handleCreateEmployee = (e: React.FormEvent) => {
+    const handleCreateEmployee = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.employeeNumber || !form.name) { toast.error('Número y nombre son requeridos'); return; }
-        addEmployee({ ...form, startDate: new Date() });
+        const newEmployee = await addEmployee({ ...form, startDate: new Date() });
+        if (!newEmployee) {
+            toast.error('No se pudo crear el empleado');
+            return;
+        }
+        console.log({ ...form, startDate: new Date() });
         setIsNewEmpOpen(false);
         setForm(BLANK_FORM);
-        load();
+        await load();
         toast.success('Empleado registrado');
     };
 
@@ -188,13 +205,15 @@ export function HumanCapitalPage() {
         toast.success('Empleado eliminado');
     };
 
-    const filtered = employees.filter(e =>
-        e.name.toLowerCase().includes(search.toLowerCase()) ||
-        e.position.toLowerCase().includes(search.toLowerCase()) ||
-        e.department.toLowerCase().includes(search.toLowerCase()) ||
-        e.employeeNumber.toLowerCase().includes(search.toLowerCase())
-    );
-
+    const filtered = employees.filter(e => {
+        const query = safeString(search).toLowerCase();
+        return (
+            safeString(e.name).toLowerCase().includes(query) ||
+            safeString(e.position).toLowerCase().includes(query) ||
+            safeString(e.department).toLowerCase().includes(query) ||
+            safeString(e.employeeNumber).toLowerCase().includes(query)
+        );
+    });
     const activeCount = employees.filter(e => e.status === 'activo').length;
     const certExpiring = employees.flatMap(e => e.certifications).filter(c => c.status === 'por vencer').length;
     const certExpired = employees.flatMap(e => e.certifications).filter(c => c.status === 'vencido').length;
@@ -221,11 +240,11 @@ export function HumanCapitalPage() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <Label>Número de empleado</Label>
-                                    <Input placeholder="EMP-006" value={form.employeeNumber} onChange={e => setForm({ ...form, employeeNumber: e.target.value })} required />
+                                    <Input placeholder="EMP-006" value={form.employeeNumber = String("EMP-"+(employees.length+1))} onChange={e => setForm({ ...form, employeeNumber: e.target.value })} required />
                                 </div>
                                 <div>
                                     <Label>Estado</Label>
-                                    <Select value={form.status} onValueChange={v => setForm({ ...form, status: v as Employee['status'] })}>
+                                    <Select value={form.status} onValueChange={v => setForm({ ...form, status: v as Employee['status'] })} disabled>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="activo">Activo</SelectItem>
@@ -236,7 +255,7 @@ export function HumanCapitalPage() {
                             </div>
                             <div>
                                 <Label>Nombre completo</Label>
-                                <Input placeholder="Juan Pérez" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+                                <Input placeholder="Nombre del empleado" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
@@ -348,7 +367,7 @@ export function HumanCapitalPage() {
                             <Card><CardContent className="flex flex-col items-center py-12 text-gray-400"><Users className="w-10 h-10 mb-2" /><p>Sin resultados</p></CardContent></Card>
                         )}
                         {filtered.map(emp => {
-                            const initials = emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                            const initials = safeString(emp.name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                             const expiredCerts = emp.certifications.filter(c => c.status === 'vencido').length;
                             const expiringCerts = emp.certifications.filter(c => c.status === 'por vencer').length;
                             const weekOT = getOvertimeForWeek(emp);

@@ -78,6 +78,7 @@ export function ProjectDetailPage() {
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (projectId) {
+      console.log(projectId, newTask)
       addTask(projectId, newTask);
       setIsDialogOpen(false);
       setNewTask({ title: '', description: '', unit: '', quantity: 0, completed: false, assignedTo: '', dueDate: undefined });

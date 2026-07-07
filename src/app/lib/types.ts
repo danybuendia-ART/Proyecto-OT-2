@@ -74,9 +74,9 @@ export interface Employee {
 }
 
 export const DEMO_WORKERS = [
-  'Carlos García',
-  'María López',
-  'Juan Martínez',
-  'Ana Rodríguez',
-  'Pedro Sánchez',
+"Jorge Alejandro Salas Ruiz",
+"Jonathan de Jesús Rodríguez Hernandez",
+"Luis Antonio Gaytan Cruz",
+"Alan Gerardo Torres Barba",
+"Darien Axel Luevano Silva"
 ];

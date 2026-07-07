@@ -131,13 +131,19 @@ export function EmployeeDetailPage() {
   const [isBadgeOpen, setIsBadgeOpen] = useState(false);
   const [certForm, setCertForm] = useState(BLANK_CERT);
 
-  const load = () => {
+  const load = async () => {
     if (!employeeId) return;
-    const emp = getEmployee(employeeId);
-    if (emp) { setEmployee(emp); setEditForm(emp); }
+    const emp = await getEmployee(employeeId);
+    if (emp) {
+      setEmployee(emp);
+      setEditForm(emp);
+    } else {
+      setEmployee(null);
+      setEditForm({});
+    }
   };
 
-  useEffect(() => { load(); }, [employeeId]);
+  useEffect(() => { void load(); }, [employeeId]);
 
   if (!employee) return (
     <div className="flex flex-col items-center justify-center py-24 text-gray-400">
@@ -151,13 +157,17 @@ export function EmployeeDetailPage() {
 
   const initials = employee.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-  const handleSaveEdit = () => {
-    updateEmployee(employee.id, editForm);
-    load();
-    setEditing(false);
-    toast.success('Información actualizada');
+  const handleSaveEdit = async () => {
+    try {
+      await updateEmployee(employee.id, editForm);
+      load();
+      setEditing(false);
+      toast.success('Información actualizada');
+    } catch (error) {
+      toast.warning("Algo ha salido mal, comprueba tu conexion a internet o intentalo mas tarde");
+      console.log(error);
+    }
   };
-
   const handleAddCert = (e: React.FormEvent) => {
     e.preventDefault();
     addCertification(employee.id, {

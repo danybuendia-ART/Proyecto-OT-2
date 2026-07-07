@@ -15,6 +15,7 @@ import {
     Phone, Mail, Building2, ChevronRight, AlertCircle, CheckCircle2, Timer,
 } from 'lucide-react';
 import { toast } from 'sonner';
+//import logo from '../img/SIR-PROJECTS2.png';
 
 // Returns the most recent Friday on or before the given date
 function getWeekStart(date: Date): Date {
@@ -52,10 +53,10 @@ function EmployeeBadge({ employee }: { employee: Employee }) {
                 {/* Header stripe */}
                 <div className="bg-gradient-to-r from-blue-700 to-blue-500 px-5 py-4 flex items-center justify-between">
                     <div>
-                        <p className="text-white/70 text-[10px] font-medium tracking-widest uppercase">Empresa</p>
-                        <p className="text-white font-bold text-sm leading-tight">Gestión de Proyectos</p>
+                        <p className="text-white/70 text-[10px] font-medium tracking-widest uppercase">SIRAGS</p>
+                        <p className="text-white font-bold text-sm leading-tight">SIR AGUASCALIENTES</p>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
                         <Building2 className="w-4 h-4 text-white" />
                     </div>
                 </div>
@@ -136,6 +137,7 @@ export function HumanCapitalPage() {
     const load = async () => {
         try {
             const data = await getEmployees();
+            console.log(data)
             setEmployees(data);
         } catch (error) {
             console.error('Error cargando empleados:', error);

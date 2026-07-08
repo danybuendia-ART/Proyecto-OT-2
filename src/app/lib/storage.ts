@@ -506,23 +506,11 @@ export const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'ta
   return newProject;*/
 };
 
-export const updateProject = (id: string, updates: Partial<Project>) => {
-  const projects = getProjects();
-  const index = projects.findIndex(p => p.id === id);
-  if (index !== -1) {
-    const current = projects[index];
-    const updated = { ...current, ...updates };
-    // Auto-set completedAt when marking as completed
-    if (updates.status === 'completed' && current.status !== 'completed') {
-      updated.completedAt = new Date();
-    }
-    // Clear completedAt if moved back from completed
-    if (updates.status && updates.status !== 'completed') {
-      updated.completedAt = undefined;
-    }
-    projects[index] = updated;
-    saveProjects(projects);
-  }
+export const updateProject = async (id: string, updates: Partial<Project>) => {
+  const status = updates.status;
+  console.log("datos para enviar", id, status)
+
+  await apiRequest("proyectos", { id, updates, action: "modifyStatus" }, "POST")
 };
 
 export const deleteProject = (id: string) => {
@@ -554,13 +542,13 @@ export const updateTask = async (projectId: string, taskId: string, updates: Par
   saveProjects(projects);
 };
 
-export const deleteTask = (projectId: string, taskId: string) => {
-  const projects = getProjects();
-  const project = projects.find(p => p.id === projectId);
-  if (!project) return;
-
-  project.tasks = project.tasks.filter(t => t.id !== taskId);
-  saveProjects(projects);
+export const deleteTask = async (projectId: string, taskId: string) => {
+  try {
+    await apiRequest("tasks", { action: "Delete", taskId }, "POST");
+    //console.log(decryptData(response));
+  } catch (e) {
+    console.error("error en la solicitud")
+  }
 };
 
 // Reset demo data (for development)

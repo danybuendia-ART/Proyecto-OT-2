@@ -105,7 +105,6 @@ export function ProjectDetailPage() {
         try {
 
           const payload = { action: "create", projectId, ...newTask };
-          console.log("informacion de la tarea: ", payload)
           await apiRequest('tasks', payload, 'POST');
           toast.success('Tarea creada');
           loadProject();
@@ -119,23 +118,22 @@ export function ProjectDetailPage() {
 
   const handleToggleTask =async (taskId: string, completed: boolean) => {
     if (projectId) {
-      console.log(projectId, taskId, { completed })
       await updateTask(projectId, taskId, { completed });
       loadProject();
     }
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
     if (confirm('¿Estás seguro de eliminar esta tarea?') && projectId) {
-      deleteTask(projectId, taskId);
+      await deleteTask(projectId, taskId);
       loadProject();
       toast.success('Tarea eliminada');
     }
   };
 
-  const handleUpdateProjectStatus = (status: Project['status']) => {
+  const handleUpdateProjectStatus = async (status: Project['status']) => {
     if (projectId) {
-      updateProject(projectId, { status });
+      await updateProject(projectId, { status });
       loadProject();
       toast.success('Estado actualizado');
     }

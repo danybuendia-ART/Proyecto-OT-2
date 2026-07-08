@@ -117,9 +117,10 @@ export function ProjectDetailPage() {
     }
   };
 
-  const handleToggleTask = (taskId: string, completed: boolean) => {
+  const handleToggleTask =async (taskId: string, completed: boolean) => {
     if (projectId) {
-      updateTask(projectId, taskId, { completed });
+      console.log(projectId, taskId, { completed })
+      await updateTask(projectId, taskId, { completed });
       loadProject();
     }
   };

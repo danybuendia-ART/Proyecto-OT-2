@@ -546,25 +546,12 @@ export const addTask = (projectId: string, task: Omit<Task, 'id' | 'createdAt'>)
   return newTask;
 };
 
-export const updateTask = (projectId: string, taskId: string, updates: Partial<Task>) => {
-  const projects = getProjects();
-  const project = projects.find(p => p.id === projectId);
-  if (!project) return;
+export const updateTask = async (projectId: string, taskId: string, updates: Partial<Task>) => {
 
-  const taskIndex = project.tasks.findIndex(t => t.id === taskId);
-  if (taskIndex !== -1) {
-    const current = project.tasks[taskIndex];
-    const updated = { ...current, ...updates };
-    // Auto-set completedAt when marking as done
-    if (updates.completed === true && !current.completed) {
-      updated.completedAt = new Date();
-    }
-    if (updates.completed === false) {
-      updated.completedAt = undefined;
-    }
-    project.tasks[taskIndex] = updated;
-    saveProjects(projects);
-  }
+  await apiRequest("tasks", { projectId, taskId, updates, action: "changeStatus" }, "POST");
+
+  const projects = getProjects();
+  saveProjects(projects);
 };
 
 export const deleteTask = (projectId: string, taskId: string) => {
@@ -730,6 +717,7 @@ export const deleteMaterial = (id: string) => {
 //este sistema sera complementado con checador a futuro, para que los empleados puedan registrar su asistencia y horas trabajadas.
 // Employees / Human Capital
 import { Employee } from './types';
+import { toast } from 'sonner';
 
 const EMPLOYEES_STORAGE_KEY = 'employees';
 const EMPLOYEES_DATA_VERSION = 'v1';

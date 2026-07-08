@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { fetchProjects, getProjects, addProject, deleteProject } from '../lib/storage';
-import { Project } from '../lib/types';
+import { fetchProjects, getProjects, addProject, deleteProject, getEmployees } from '../lib/storage';
+import { Project, Employee } from '../lib/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProject, setNewProject] = useState({
     name: '',
@@ -25,10 +26,19 @@ export function ProjectsPage() {
 
   useEffect(() => {
     loadProjects();
+    (async () => {
+      try {
+        const emps = await getEmployees();
+        setEmployees(emps);
+      } catch (e) {
+        console.error('Error loading employees', e);
+      }
+    })();
   }, []);
 
   const loadProjects = async () => {
     const data = await fetchProjects();
+
     setProjects(data);
   };
 

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject } from '../lib/storage';
+import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees } from '../lib/storage';
+import { apiRequest } from '../apiClient';
+import { Employee } from '../lib/types';
 import { Project, Task, DEMO_WORKERS } from '../lib/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -29,6 +31,7 @@ export function ProjectDetailPage() {
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -58,6 +61,15 @@ export function ProjectDetailPage() {
       navigate('/');
     };
     load();
+    // load employees
+    (async () => {
+      try {
+        const emps = await getEmployees();
+        setEmployees(emps);
+      } catch (e) {
+        console.error('Error loading employees', e);
+      }
+    })();
   }, [projectId, navigate]);
 
   const loadProject = async () => {
@@ -78,12 +90,25 @@ export function ProjectDetailPage() {
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (projectId) {
-      console.log(projectId, newTask)
       addTask(projectId, newTask);
       setIsDialogOpen(false);
       setNewTask({ title: '', description: '', unit: '', quantity: 0, completed: false, assignedTo: '', dueDate: undefined });
       loadProject();
       toast.success('Tarea creada exitosamente');
+
+      // Enviar al endpoint remoto 'tasks'
+      (async () => {
+        try {
+          
+          const payload = { action: "create",projectId, ...newTask };
+          console.log("informacion de la tarea: ", payload) 
+          await apiRequest('tasks', payload, 'POST');
+          toast.success('Tarea creada');
+        } catch (err) {
+          console.error('Error enviando tarea al servidor', err);
+          toast.error('Error al enviar la tarea al servidor');
+        }
+      })();
     }
   };
 
@@ -287,9 +312,16 @@ export function ProjectDetailPage() {
                     <SelectValue placeholder="Seleccionar trabajador" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DEMO_WORKERS.map((w) => (
-                      <SelectItem key={w} value={w}>{w}</SelectItem>
-                    ))}
+                    {employees.length > 0 ? (
+                      employees.map((w) => (
+                        <SelectItem key={w.id} value={w.name}>{w.name}</SelectItem>
+                      ))
+                    ) : (
+                      // Fallback to demo workers if API/local list is empty
+                      DEMO_WORKERS.map((w) => (
+                        <SelectItem key={w} value={w}>{w}</SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>

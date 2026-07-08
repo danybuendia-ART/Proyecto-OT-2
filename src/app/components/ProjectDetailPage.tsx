@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, Form } from 'react-router';
 import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees } from '../lib/storage';
 import { apiRequest } from '../apiClient';
 import { Employee } from '../lib/types';
@@ -90,20 +90,25 @@ export function ProjectDetailPage() {
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (projectId) {
+
+      if(newTask.quantity == 0){
+        return toast.warning("la cantidad no puede ser 0");
+      }
+      if(newTask.assignedTo == "") {
+        return toast.warning("Se requiere asignar un trabajador"); 
+      } 
       addTask(projectId, newTask);
       setIsDialogOpen(false);
       setNewTask({ title: '', description: '', unit: '', quantity: 0, completed: false, assignedTo: '', dueDate: undefined });
-      loadProject();
-      toast.success('Tarea creada exitosamente');
-
       // Enviar al endpoint remoto 'tasks'
       (async () => {
         try {
-          
-          const payload = { action: "create",projectId, ...newTask };
-          console.log("informacion de la tarea: ", payload) 
+
+          const payload = { action: "create", projectId, ...newTask };
+          console.log("informacion de la tarea: ", payload)
           await apiRequest('tasks', payload, 'POST');
           toast.success('Tarea creada');
+          loadProject();
         } catch (err) {
           console.error('Error enviando tarea al servidor', err);
           toast.error('Error al enviar la tarea al servidor');
@@ -178,7 +183,7 @@ export function ProjectDetailPage() {
             <h2 className="text-3xl font-semibold">{project.name}</h2>
             <p className="text-gray-500 mt-2">{project.description}</p>
           </div>
-          
+
           <Select
             value={project.status}
             onValueChange={(value: Project['status']) => handleUpdateProjectStatus(value)}
@@ -220,7 +225,7 @@ export function ProjectDetailPage() {
             <span className="font-medium">{completedTasks} de {totalTasks} tareas completadas</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
-            <div 
+            <div
               className="bg-blue-600 h-3 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
@@ -233,7 +238,7 @@ export function ProjectDetailPage() {
           <h3 className="text-2xl font-semibold">Tareas</h3>
           <p className="text-gray-500 mt-1">Gestiona las tareas del proyecto</p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -299,14 +304,14 @@ export function ProjectDetailPage() {
                   value={newTask.dueDate ? newTask.dueDate.toISOString().split('T')[0] : ''}
                   onChange={(e) =>
                     setNewTask({ ...newTask, dueDate: e.target.value ? new Date(e.target.value + 'T12:00:00') : undefined })
-                  }
+                  } required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assignedTo">Asignar a (trabajador)</Label>
                 <Select
                   value={newTask.assignedTo}
-                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
+                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })} 
                 >
                   <SelectTrigger id="assignedTo">
                     <SelectValue placeholder="Seleccionar trabajador" />
@@ -352,12 +357,12 @@ export function ProjectDetailPage() {
                 <div className="flex items-start gap-4">
                   <Checkbox
                     checked={task.completed}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       handleToggleTask(task.id, checked as boolean)
                     }
                     className="mt-1"
                   />
-                  
+
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
@@ -366,7 +371,7 @@ export function ProjectDetailPage() {
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">{task.description}</p>
                       </div>
-                      
+
                       <Button
                         variant="ghost"
                         size="icon"
@@ -375,7 +380,7 @@ export function ProjectDetailPage() {
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
                     </div>
-                    
+
                     <div className="flex items-center gap-4 mt-3 flex-wrap">
                       <Badge variant="outline" className="font-normal">
                         Cantidad: {task.quantity} {task.unit}
@@ -399,7 +404,7 @@ export function ProjectDetailPage() {
                         </Badge>
                       )}
                     </div>
-                    
+
                     <p className="text-xs text-gray-500 mt-2">
                       Creada: {task.createdAt.toLocaleDateString()}
                     </p>

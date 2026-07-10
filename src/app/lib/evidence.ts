@@ -9,7 +9,7 @@ export interface EvidenceItem {
 }
 
 const EVIDENCE_KEY = 'evidence';
-export const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
+export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
 const loadAll = (): Record<string, EvidenceItem[]> => {
   const stored = localStorage.getItem(EVIDENCE_KEY);

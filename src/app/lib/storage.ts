@@ -15,6 +15,11 @@ const INITIAL_PROJECTS: Project[] = [
 
 ];
 
+const parseEvidenceItem = (e: any) => ({
+  ...e,
+  uploadedAt: e.uploadedAt ? new Date(e.uploadedAt) : undefined,
+});
+
 const parseProject = (p: any): Project => ({
   id: String(p.id),
   name: p.name ?? p.nombre ?? '',
@@ -39,6 +44,7 @@ const parseProject = (p: any): Project => ({
       completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
       dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
       assignedTo: t.assignedTo ?? t.asignadoA ?? undefined,
+      evidences: Array.isArray(t.evidences) ? t.evidences.map(parseEvidenceItem) : [],
     }))
     : [],
 });
@@ -53,6 +59,7 @@ const normalizeProjectsResponse = (response: any): any[] => {
 export const fetchProjects = async (): Promise<Project[]> => {
   try {
     const response: any = await apiRequest('proyectos', null, 'GET');
+    console.log(response)
     const projects = normalizeProjectsResponse(response);
     return projects.map(parseProject);
   } catch (error) {

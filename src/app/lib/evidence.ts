@@ -46,6 +46,7 @@ export const addEvidence = (taskId: string, item: Omit<EvidenceItem, 'id' | 'upl
     uploadedAt: new Date(),
   };
   all[taskId] = [...(all[taskId] || []), newItem];
+  console.log(all)
   saveAll(all);
   return newItem;
 };

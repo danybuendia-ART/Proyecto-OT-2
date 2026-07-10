@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { fetchProjects } from '../lib/storage';
 import { getCurrentUser } from '../lib/auth';
 import { Project, Task } from '../lib/types';
+import { apiUploadFile } from '../apiClient';
 import {
   getEvidence,
   addEvidence,
@@ -119,8 +120,11 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
           type: file.type,
           dataUrl,
           size: file.size,
-          uploadedBy: user?.nombre ?? 'Desconocido',
+          uploadedBy: user[0]?.nombre ?? 'Desconocido',
         });
+
+        await apiUploadFile("files", file, { taskId: task.id, uploadedBy: user[0]?.nombre ?? "Desconocido" })
+
         toast.success(`"${file.name}" subido correctamente`);
       }
       reload();
@@ -197,9 +201,8 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
             </h3>
 
             <div
-              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${
-                dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}

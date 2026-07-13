@@ -133,9 +133,10 @@ export const updateProject = async (id: string, updates: Partial<Project>) => {
   await apiRequest("proyectos", { id, updates, action: "modifyStatus" }, "POST")
 };
 
-export const deleteProject = (id: string) => {
-  const projects = getProjects().filter(p => p.id !== id);
-  saveProjects(projects);
+export const deleteProject = async (id: string) => {
+  //const projects = getProjects().filter(p => p.id !== id);
+  await apiRequest("proyectos", {action: "disabledProyect", id}, "POST");
+  //saveProjects(projects);
 };
 
 export const addTask = (projectId: string, task: Omit<Task, 'id' | 'createdAt'>): Task | null => {
@@ -189,78 +190,6 @@ if (localStorage.getItem('materials_data_version') !== MATERIALS_DATA_VERSION) {
 }
 
 const INITIAL_MATERIALS: Material[] = [
-  {
-    id: 'm1',
-    projectId: '1',
-    name: 'Licencias de software',
-    description: 'Licencias para herramientas de desarrollo',
-    quantity: 5,
-    unit: 'licencias',
-    status: 'entregado',
-    priority: 'alta',
-    createdAt: new Date('2026-05-03'),
-    updatedAt: new Date('2026-05-10'),
-  },
-  {
-    id: 'm2',
-    projectId: '1',
-    name: 'Servidor cloud',
-    description: 'Instancia EC2 para ambiente de pruebas',
-    quantity: 1,
-    unit: 'unidad',
-    status: 'en camino',
-    priority: 'urgente',
-    createdAt: new Date('2026-05-15'),
-    updatedAt: new Date('2026-05-20'),
-  },
-  {
-    id: 'm3',
-    projectId: '2',
-    name: 'Cemento',
-    description: 'Cemento Portland tipo I',
-    quantity: 500,
-    unit: 'sacos',
-    status: 'entregado',
-    priority: 'normal',
-    createdAt: new Date('2026-04-16'),
-    updatedAt: new Date('2026-04-25'),
-  },
-  {
-    id: 'm4',
-    projectId: '2',
-    name: 'Varillas de acero',
-    description: 'Varillas corrugadas #4',
-    quantity: 200,
-    unit: 'piezas',
-    status: 'en camino',
-    priority: 'urgente',
-    createdAt: new Date('2026-05-01'),
-    updatedAt: new Date('2026-05-28'),
-  },
-  {
-    id: 'm5',
-    projectId: '2',
-    name: 'Cable eléctrico',
-    description: 'Cable calibre 12 AWG',
-    quantity: 1000,
-    unit: 'metros',
-    status: 'en espera',
-    priority: 'alta',
-    createdAt: new Date('2026-05-20'),
-    updatedAt: new Date('2026-05-20'),
-  },
-  {
-    id: 'm6',
-    projectId: '3',
-    name: 'Servicio de fotografía',
-    description: 'Sesión fotográfica para contenido',
-    quantity: 3,
-    unit: 'sesiones',
-    status: 'en espera',
-    priority: 'baja',
-    createdAt: new Date('2026-04-05'),
-    updatedAt: new Date('2026-04-05'),
-  },
 ];
 
 const parseMaterial = (m: any): Material => ({

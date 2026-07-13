@@ -54,6 +54,7 @@ export function ProjectsPage() {
   const handleDeleteProject = (id: string) => {
     if (confirm('¿Estás seguro de eliminar este proyecto?')) {
       deleteProject(id);
+      console.log("id del proyecto eliminado: ", id)
       loadProjects();
       toast.success('Proyecto eliminado');
     }

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { LayoutDashboard, LogOut, User, BarChart3, CalendarDays, FolderOpen, ChartNoAxesCombined, ShoppingCart, Users } from 'lucide-react';
+import { LogOut, User, BarChart3, CalendarDays, FolderOpen, ChartNoAxesCombined, ShoppingCart, Users, Menu } from 'lucide-react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Proyectos', icon: FolderOpen },
@@ -54,7 +54,7 @@ export function DashboardLayout() {
           </button>
 
           {/* Main nav */}
-          <nav className="flex items-center gap-1">
+          <nav className="hidden sm:flex items-center gap-1">
             {NAV_LINKS.map(({ to, label, icon: Icon }) => (
               <button
                 key={to}
@@ -71,6 +71,38 @@ export function DashboardLayout() {
               </button>
             ))}
           </nav>
+
+          {/* Mobile menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="sm:hidden flex items-center gap-2">
+                <Menu className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Ir a</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+                <DropdownMenuItem
+                  key={to}
+                  onClick={() => navigate(to)}
+                  className={isActive(to) ? 'bg-blue-50 text-blue-700' : ''}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/account')}>
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Mi cuenta
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="w-4 h-4 mr-2" />
+                Cerrar sesión
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* User menu */}
           <DropdownMenu>
@@ -103,7 +135,9 @@ export function DashboardLayout() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Outlet />
+        <div className="min-h-[70vh] overflow-hidden sm:overflow-visible">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

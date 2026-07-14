@@ -11,14 +11,14 @@
   "background_color": "#ffffff",
   "icons": [
     {
-      "src": "./SIR-192x136.svg",
-      "sizes": "192x192",
+      "src": "/SIRAGS-192x108.svg",
+      "sizes": "192x108",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./SIR-192x136.svg",
-      "sizes": "512x512",
+      "src": "/SIRAGS-512x288.svg",
+      "sizes": "512x288",
       "type": "image/svg+xml",
       "purpose": "any"
     }

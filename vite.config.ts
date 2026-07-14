@@ -29,7 +29,8 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['SIR-192x136.svg', 'SIR-512x362.svg'],
+        injectManifest: false,
+        includeAssets: ['SIRAGS-192x108.svg', 'SIRAGS-512x288.svg'],
         manifest: {
           name: 'OT SIR',
           short_name: 'OT SIR',
@@ -43,14 +44,14 @@ export default defineConfig(({ mode }) => {
           start_url: '/',
           icons: [
             {
-              src: '/SIR-192x136.svg',
-              sizes: '192x192',
+              src: '/SIRAGS-192x108.svg',
+              sizes: '192x108',
               type: 'image/svg+xml',
               purpose: 'any',
             },
             {
-              src: '/SIR-512x362.svg',
-              sizes: '512x512',
+              src: '/SIRAGS-512x288.svg',
+              sizes: '512x288',
               type: 'image/svg+xml',
               purpose: 'any',
             },
@@ -58,6 +59,8 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+          cleanupOutdatedCaches: true,
+          navigateFallbackDenylist: [/^\/api\//],
         },
       }),
     ],

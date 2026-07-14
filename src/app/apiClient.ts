@@ -1,7 +1,13 @@
 import CryptoJS from "crypto-js";
 
 const SECRET_KEY = import.meta.env.VITE_API_KEY_ENCRYPT;
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_PROXY_TARGET || "/api").replace(/\/$/, "");
+
+const buildUrl = (endpoint: string) => {
+  if (!endpoint) return API_URL;
+  if (/^https?:\/\//i.test(endpoint)) return endpoint;
+  return `${API_URL}/${endpoint.replace(/^\//, "")}`;
+};
 
 export async function apiRequest<T extends object, R = any>(
   endpoint: string,
@@ -23,7 +29,7 @@ export async function apiRequest<T extends object, R = any>(
       options.body = JSON.stringify({ payload: encrypted });
     }
 
-    const response = await fetch(`${API_URL}/${endpoint}`, options);
+    const response = await fetch(buildUrl(endpoint), options);
 
     if (!response.ok) {
       throw new Error(`Error en la solicitud: ${response.status}`);
@@ -60,7 +66,7 @@ export async function apiUploadFile<R = any>(
     formData.append("payload", encrypted); // metadatos cifrados
     formData.append("action", "evidencias")
     console.log(formData)
-    const response = await fetch(`${API_URL}/${endpoint}`, {
+    const response = await fetch(buildUrl(endpoint), {
       method: "POST",
       body: formData,
     });

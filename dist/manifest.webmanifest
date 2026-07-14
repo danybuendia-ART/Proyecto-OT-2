@@ -1,6 +1,6 @@
 {
-    "name": "SIR OT",
-    "short_name": "OT",
+    "name": "OT SIR",
+    "short_name": "OT SIR",
     "description": "Aplicación para gestionar proyectos, usuarios y seguimiento operativo.",
     "start_url": "/",
     "display": "standalone",
@@ -12,13 +12,13 @@
     "orientation": "portrait",
     "icons": [
         {
-            "src": "/pwa-512x512.svg",
+            "src": "./SIR-192x136.svg",
             "sizes": "192x192",
             "type": "image/svg+xml",
             "purpose": "any"
         },
         {
-            "src": "/pwa-512x512.svg",
+            "src": "./SIR-192x136.svg",
             "sizes": "512x512",
             "type": "image/svg+xml",
             "purpose": "any"

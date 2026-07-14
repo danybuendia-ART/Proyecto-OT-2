@@ -46,7 +46,7 @@ const MONTHS_ES = [
 ];
 const DAYS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-const EVIDENCE_BASE_URL = import.meta.env.VITE_EVIDENCE_URL ?? 'http://192.168.0.10/evidences/';
+const EVIDENCE_BASE_URL = import.meta.env.VITE_API_PROXY_TARGET +'/evidences/';
 
 const normalizeEvidenceFileUrl = (fileName: string) => {
   const encodedFileName = fileName.split('/').map(encodeURIComponent).join('/');

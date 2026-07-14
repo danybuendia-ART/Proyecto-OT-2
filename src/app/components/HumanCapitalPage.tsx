@@ -207,7 +207,6 @@ export function HumanCapitalPage() {
         toast.success('Empleado eliminado');
     };
 
-    const nextEmployeeNumber = `EMP-${employees.length + 1}`;
     const filtered = employees.filter(e => {
         const query = safeString(search).toLowerCase();
         return (

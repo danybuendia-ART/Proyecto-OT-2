@@ -207,6 +207,7 @@ export function HumanCapitalPage() {
         toast.success('Empleado eliminado');
     };
 
+    const nextEmployeeNumber = `EMP-${employees.length + 1}`;
     const filtered = employees.filter(e => {
         const query = safeString(search).toLowerCase();
         return (
@@ -220,6 +221,7 @@ export function HumanCapitalPage() {
     const certExpiring = employees.flatMap(e => e.certifications).filter(c => c.status === 'por vencer').length;
     const certExpired = employees.flatMap(e => e.certifications).filter(c => c.status === 'vencido').length;
     const totalOTThisWeek = employees.reduce((s, e) => s + (getOvertimeForWeek(e)?.hours ?? 0), 0);
+    const nextEmployeeNumber = `EMP-${employees.length + 1}`;
 
     return (
         <div className="space-y-6">
@@ -242,7 +244,7 @@ export function HumanCapitalPage() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <Label>Número de empleado</Label>
-                                    <Input placeholder="EMP-006" value={form.employeeNumber = String("EMP-"+(employees.length+1))} onChange={e => setForm({ ...form, employeeNumber: e.target.value })} required />
+                                    <Input placeholder="EMP-006" value={form.employeeNumber || nextEmployeeNumber} onChange={e => setForm({ ...form, employeeNumber: e.target.value })} required />
                                 </div>
                                 <div>
                                     <Label>Estado</Label>

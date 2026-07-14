@@ -29,10 +29,10 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['pwa-192x192.svg', 'pwa-512x512.svg'],
+        includeAssets: ['SIR-192x136.svg', 'SIR-512x362.svg'],
         manifest: {
-          name: 'Propuesta OT',
-          short_name: 'OT',
+          name: 'OT SIR',
+          short_name: 'OT SIR',
           description: 'Aplicación para gestionar proyectos, usuarios y seguimiento operativo.',
           id: '/',
           theme_color: '#0f172a',
@@ -43,13 +43,13 @@ export default defineConfig(({ mode }) => {
           start_url: '/',
           icons: [
             {
-              src: '/pwa-192x192.svg',
+              src: '/SIR-192x136.svg',
               sizes: '192x192',
               type: 'image/svg+xml',
               purpose: 'any',
             },
             {
-              src: '/pwa-512x512.svg',
+              src: '/SIR-512x362.svg',
               sizes: '512x512',
               type: 'image/svg+xml',
               purpose: 'any',

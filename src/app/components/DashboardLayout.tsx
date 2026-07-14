@@ -107,7 +107,7 @@ export function DashboardLayout() {
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2">
                 <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-blue-600" />
                 </div>
@@ -121,8 +121,8 @@ export function DashboardLayout() {
                 {user?.correo}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/account')}>
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Analíticas y rendimiento
+                <User className="w-4 h-4 mr-2" />
+                Mi cuenta
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">

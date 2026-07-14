@@ -23,7 +23,8 @@ const NAV_LINKS = [
 export function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const user: any = getCurrentUser();
+  const user = getCurrentUser();
+  const userName = user?.nombre ?? 'usuario';
 
   const handleLogout = () => {
     logout();
@@ -49,7 +50,7 @@ export function DashboardLayout() {
             </div>
             <div className="text-left hidden sm:block">
               <h1 className="font-semibold text-sm leading-tight">Sistema Manteniniento OT SIRAGS</h1>
-              <p className="text-xs text-gray-400">Bienvenid@ {user[0]?.nombre}</p>
+              <p className="text-xs text-gray-400">Bienvenid@ {userName}</p>
             </div>
           </button>
 
@@ -111,7 +112,7 @@ export function DashboardLayout() {
                 <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-blue-600" />
                 </div>
-                <span className="hidden sm:inline text-sm">{user[0]?.nombre}</span>
+                <span className="hidden sm:inline text-sm">{userName}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">

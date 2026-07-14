@@ -108,6 +108,7 @@ interface EvidencePanelProps {
 
 function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps) {
   const user = getCurrentUser();
+  const userName = user?.nombre ?? 'Desconocido';
   const color = PROJECT_COLORS[colorIdx % PROJECT_COLORS.length];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [evidence, setEvidence] = useState<TaskEvidence[]>(() => task.evidences ?? []);
@@ -127,19 +128,19 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
         await apiUploadFile('files', file, {
           taskId: task.id,
           action: 'evidences',
-          uploadedBy: user[0]?.nombre ?? 'Desconocido',
+          uploadedBy: userName,
         });
 
         const newEvidence: TaskEvidence = {
           fileName: file.name,
           type: file.type,
           size: file.size,
-          uploadedBy: user[0]?.nombre ?? 'Desconocido',
+          uploadedBy: userName,
           uploadedAt: new Date(),
           url: normalizeEvidenceFileUrl(file.name),
         };
 
-        setEvidence((prev) => [...prev, newEvidence]);
+        setEvidence((prev: TaskEvidence[]) => [...prev, newEvidence]);
         toast.success(`"${file.name}" subido correctamente`);
       }
     } catch (err: any) {
@@ -147,15 +148,15 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
     } finally {
       setUploading(false);
     }
-  }, [task.id, user]);
+  }, [task.id, userName]);
 
   const handleDelete = (identifier: string) => {
-    setEvidence((prev) => prev.filter((item) => item.id !== identifier && item.fileName !== identifier));
+    setEvidence((prev: TaskEvidence[]) => prev.filter((item: TaskEvidence) => item.id !== identifier && item.fileName !== identifier));
     toast.success('Evidencia eliminada');
   };
 
-  const images = evidence.filter(isImageEvidence);
-  const docs = evidence.filter((item) => !isImageEvidence(item));
+  const images = evidence.filter((item: TaskEvidence) => isImageEvidence(item));
+  const docs = evidence.filter((item: TaskEvidence) => !isImageEvidence(item));
 
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
@@ -251,7 +252,7 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
             <div>
               <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fotos e imágenes</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {images.map((item, index) => {
+                {images.map((item: TaskEvidence, index: number) => {
                   const url = resolveEvidenceUrl(item);
                   return (
                     <div key={item.id ?? `${item.fileName}-${index}`} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 border">
@@ -293,7 +294,7 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
             <div>
               <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Documentos</h4>
               <div className="space-y-2">
-                {docs.map((item, index) => (
+                {docs.map((item: TaskEvidence, index: number) => (
                   <div key={item.id ?? `${item.fileName}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
                     <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileText className="w-4 h-4 text-blue-600" />
@@ -358,7 +359,7 @@ export function CalendarPage() {
   // Map projectId -> color index (stable across renders)
   const projectColorMap = useMemo(() => {
     const map = new Map<string, number>();
-    projects.forEach((p, i) => map.set(p.id, i));
+    projects.forEach((p: Project, i: number) => map.set(p.id, i));
     return map;
   }, [projects]);
 
@@ -368,8 +369,8 @@ export function CalendarPage() {
     const month = viewDate.getMonth();
     const map: Record<number, CalendarEntry[]> = {};
 
-    projects.forEach((project) => {
-      project.tasks.forEach((task) => {
+    projects.forEach((project: Project) => {
+      project.tasks.forEach((task: Task) => {
         if (!task.dueDate) return;
         const d = task.dueDate;
         if (d.getFullYear() !== year || d.getMonth() !== month) return;
@@ -407,8 +408,12 @@ export function CalendarPage() {
 
   // Legend: projects that have tasks this month
   const activeProjectsThisMonth = useMemo(() => {
-    const ids = new Set(Object.values(tasksByDay).flat().map(e => e.project.id));
-    return projects.filter(p => ids.has(p.id));
+    const ids = new Set(
+      Object.values(tasksByDay)
+        .flat()
+        .map((e: unknown) => (e as CalendarEntry).project.id)
+    );
+    return projects.filter((p: Project) => ids.has(p.id));
   }, [tasksByDay, projects]);
 
   return (
@@ -486,7 +491,7 @@ export function CalendarPage() {
 
                         {/* Task pills */}
                         <div className="flex flex-col gap-0.5 flex-1">
-                          {visible.map((entry) => {
+                          {visible.map((entry: CalendarEntry) => {
                             const c = PROJECT_COLORS[entry.colorIdx % PROJECT_COLORS.length];
                             return (
                               <button
@@ -521,7 +526,7 @@ export function CalendarPage() {
             {/* Legend */}
             {activeProjectsThisMonth.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-3 px-1">
-                {activeProjectsThisMonth.map((p) => {
+                {activeProjectsThisMonth.map((p: Project) => {
                   const idx = projectColorMap.get(p.id) ?? 0;
                   const c = PROJECT_COLORS[idx % PROJECT_COLORS.length];
                   return (
@@ -561,7 +566,7 @@ export function CalendarPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {selectedEntries.map((entry) => {
+                  {selectedEntries.map((entry: CalendarEntry) => {
                     const c = PROJECT_COLORS[entry.colorIdx % PROJECT_COLORS.length];
                     const evidenceCount = entry.task.evidences?.length ?? 0;
                     return (
@@ -604,7 +609,7 @@ export function CalendarPage() {
       </div>
 
       {/* Evidence dialog */}
-      <Dialog open={!!selectedEntry} onOpenChange={(open) => { if (!open) setSelectedEntry(null); }}>
+      <Dialog open={!!selectedEntry} onOpenChange={(open: boolean) => { if (!open) setSelectedEntry(null); }}>
         {selectedEntry && (
           <EvidencePanel
             task={selectedEntry.task}

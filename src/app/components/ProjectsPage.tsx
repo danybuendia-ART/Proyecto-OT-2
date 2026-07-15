@@ -96,11 +96,11 @@ export function ProjectsPage() {
   const getCardClass = (status: Project['status']) => {
     switch (status) {
       case 'active':
-        return 'border-blue-500';   // borde azul para activos
+        return 'md:bg-blue-100';   // borde azul para activos
       case 'completed':
-        return 'border-green-500';  // borde verde para completados
+        return 'md:bg-green-100';  // borde verde para completados
       case 'on-hold':
-        return 'border-yellow-400'; // borde amarillo para pausados
+        return 'md:bg-yellow-100'; // borde amarillo para pausados
       default:
         return '';
     }
@@ -205,7 +205,7 @@ export function ProjectsPage() {
             const totalTasks = project.tasks.length;
             const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
-            console.log(project.status)
+            //console.log(project.status)
             //completed
             //on-hold
             //active

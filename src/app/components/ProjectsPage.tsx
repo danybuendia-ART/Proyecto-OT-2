@@ -93,6 +93,19 @@ export function ProjectsPage() {
     }
   };
 
+  const getCardClass = (status: Project['status']) => {
+    switch (status) {
+      case 'active':
+        return 'border-blue-500';   // borde azul para activos
+      case 'completed':
+        return 'border-green-500';  // borde verde para completados
+      case 'on-hold':
+        return 'border-yellow-400'; // borde amarillo para pausados
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -192,12 +205,17 @@ export function ProjectsPage() {
             const totalTasks = project.tasks.length;
             const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
+            console.log(project.status)
+            //completed
+            //on-hold
+            //active
             return (
               <Card
                 key={project.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className={`hover:shadow-lg transition-shadow cursor-pointer ${getCardClass(project.status)}`}
                 onClick={() => navigate(`/project/${project.id}`)}
               >
+
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-xl">{project.name}</CardTitle>

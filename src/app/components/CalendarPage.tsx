@@ -112,7 +112,7 @@ interface EvidencePanelProps {
 
 function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: EvidencePanelProps) {
   const user = getCurrentUser();
-  const userName = user?.nombre ?? 'Desconocido';
+  const userName = user?.nombre ?? '';
   const color = PROJECT_COLORS[colorIdx % PROJECT_COLORS.length];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [evidence, setEvidence] = useState<TaskEvidence[]>(() => task.evidences ?? []);
@@ -321,7 +321,11 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.fileName}</p>
                       <p className="text-xs text-gray-400">
-                        {item.size ? formatFileSize(item.size) : '—'} · {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString('es-ES') : '—'} · {item.uploadedBy ?? 'Desconocido'}
+                        {[
+                          item.size ? formatFileSize(item.size) : null,
+                          item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString('es-ES') : null,
+                          item.uploadedBy || null,
+                        ].filter(Boolean).join(' · ') || '—'}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">

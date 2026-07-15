@@ -68,14 +68,19 @@ export const logout = () => {
 
 export const getCurrentUser = (): User | null => {
   const userStr = localStorage.getItem("user");
-  if (userStr) {
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
+  if (!userStr) return null;
+
+  try {
+    const parsedUser = JSON.parse(userStr);
+
+    if (Array.isArray(parsedUser)) {
+      return parsedUser[0] ?? null;
     }
+
+    return parsedUser as User;
+  } catch {
+    return null;
   }
-  return null;
 };
 
 export const setCurrentUser = (user: User) => {

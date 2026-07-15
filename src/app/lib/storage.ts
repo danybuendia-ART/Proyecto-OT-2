@@ -96,13 +96,13 @@ export const getProject = (id: string): Project | undefined => {
 };
 
 export const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'tasks'>) => {
-  const user: any = getCurrentUser();
+  const currentUser = getCurrentUser();
   const informacion: object = {
     action: "create",
     nombre: project.name,
     descripcion: project.description,
     estatus: project.status,
-    fk_usuario: user[0]?.id
+    fk_usuario: currentUser?.id,
   }
 
   const response: any = await apiRequest("proyectos", informacion, "POST");

@@ -69,6 +69,9 @@ const resolveEvidenceUrl = (item: { url?: string; fileName: string }) => {
 const isImageEvidence = (item: { type?: string; fileName: string }) =>
   item.type?.startsWith('image/') || /\.(jpe?g|png|gif|webp|svg)$/i.test(item.fileName);
 
+const createEvidenceId = (item: TaskEvidence) =>
+  item.id ?? `${item.fileName}-${item.uploadedAt?.getTime() ?? Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 // Colors indexed per project (pill style)
 const PROJECT_COLORS = [
   { pill: 'bg-blue-100 text-blue-800 border border-blue-200', dot: 'bg-blue-500', header: 'bg-blue-500' },
@@ -104,9 +107,10 @@ interface EvidencePanelProps {
   project: Project;
   colorIdx: number;
   onClose: () => void;
+  onRefresh: () => Promise<void>;
 }
 
-function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps) {
+function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: EvidencePanelProps) {
   const user = getCurrentUser();
   const userName = user?.nombre ?? 'Desconocido';
   const color = PROJECT_COLORS[colorIdx % PROJECT_COLORS.length];
@@ -115,9 +119,14 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
+  useEffect(() => {
+    setEvidence(task.evidences ?? []);
+  }, [task.evidences]);
+
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploading(true);
+    let uploadedAny = false;
     try {
       for (const file of Array.from(files)) {
         if (file.size > MAX_FILE_SIZE) {
@@ -131,7 +140,10 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
           uploadedBy: userName,
         });
 
+        uploadedAny = true;
+
         const newEvidence: TaskEvidence = {
+          id: `${file.name}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
           fileName: file.name,
           type: file.type,
           size: file.size,
@@ -143,12 +155,16 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
         setEvidence((prev: TaskEvidence[]) => [...prev, newEvidence]);
         toast.success(`"${file.name}" subido correctamente`);
       }
+
+      if (uploadedAny) {
+        await onRefresh();
+      }
     } catch (err: any) {
       toast.error(err.message ?? 'Error al subir el archivo');
     } finally {
       setUploading(false);
     }
-  }, [task.id, userName]);
+  }, [task.id, userName, onRefresh]);
 
   const handleDelete = (identifier: string) => {
     setEvidence((prev: TaskEvidence[]) => prev.filter((item: TaskEvidence) => item.id !== identifier && item.fileName !== identifier));
@@ -232,7 +248,10 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
                 className="hidden"
                 multiple
                 accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
-                onChange={(e) => handleFiles(e.target.files)}
+                onChange={(e) => {
+                  handleFiles(e.target.files);
+                  if (e.target) e.target.value = '';
+                }}
               />
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-600">
@@ -255,7 +274,7 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
                 {images.map((item: TaskEvidence, index: number) => {
                   const url = resolveEvidenceUrl(item);
                   return (
-                    <div key={item.id ?? `${item.fileName}-${index}`} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 border">
+                    <div key={createEvidenceId(item)} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 border">
                       <img
                         src={url}
                         alt={item.fileName}
@@ -295,7 +314,7 @@ function EvidencePanel({ task, project, colorIdx, onClose }: EvidencePanelProps)
               <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Documentos</h4>
               <div className="space-y-2">
                 {docs.map((item: TaskEvidence, index: number) => (
-                  <div key={item.id ?? `${item.fileName}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
+                  <div key={createEvidenceId(item)} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
                     <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileText className="w-4 h-4 text-blue-600" />
                     </div>
@@ -347,6 +366,27 @@ export function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<number | null>(today.getDate());
   const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+
+  const refreshProjects = useCallback(async () => {
+    const data = await fetchProjects();
+    setProjects(data);
+
+    if (selectedEntry) {
+      const project = data.find((p) => p.id === selectedEntry.project.id);
+      const task = project?.tasks.find((t) => t.id === selectedEntry.task.id);
+      if (project && task) {
+        const newProjectColorMap = new Map<string, number>();
+        data.forEach((p: Project, i: number) => newProjectColorMap.set(p.id, i));
+        setSelectedEntry({
+          task,
+          project,
+          colorIdx: newProjectColorMap.get(project.id) ?? selectedEntry.colorIdx,
+        });
+      } else {
+        setSelectedEntry(null);
+      }
+    }
+  }, [selectedEntry]);
 
   useEffect(() => {
     const load = async () => {
@@ -616,6 +656,7 @@ export function CalendarPage() {
             project={selectedEntry.project}
             colorIdx={selectedEntry.colorIdx}
             onClose={() => setSelectedEntry(null)}
+            onRefresh={refreshProjects}
           />
         )}
       </Dialog>

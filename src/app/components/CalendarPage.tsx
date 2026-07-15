@@ -69,6 +69,49 @@ const resolveEvidenceUrl = (item: { url?: string; fileName: string }) => {
 const isImageEvidence = (item: { type?: string; fileName: string }) =>
   item.type?.startsWith('image/') || /\.(jpe?g|png|gif|webp|svg)$/i.test(item.fileName);
 
+const prepareUploadFile = async (file: File): Promise<File> => {
+  if (!file.type.startsWith('image/')) return file;
+
+  const shouldCompress = file.size > 2 * 1024 * 1024 || ['image/heic', 'image/heif', 'image/avif'].includes(file.type);
+  if (!shouldCompress) return file;
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 1600;
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      bitmap.close();
+      return file;
+    }
+
+    context.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (result) resolve(result);
+        else reject(new Error('No se pudo comprimir la imagen'));
+      }, 'image/jpeg', 0.85);
+    });
+
+    bitmap.close();
+
+    return new File(
+      [blob],
+      file.name.replace(/\.(heic|heif|avif|png|webp|jpe?g)$/i, '.jpg'),
+      { type: 'image/jpeg', lastModified: Date.now() }
+    );
+  } catch {
+    return file;
+  }
+};
+
 const createEvidenceId = (item: TaskEvidence) =>
   item.id ?? `${item.fileName}-${item.uploadedAt?.getTime() ?? Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -129,12 +172,14 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
     let uploadedAny = false;
     try {
       for (const file of Array.from(files)) {
-        if (file.size > MAX_FILE_SIZE) {
-          toast.error(`"${file.name}" supera el límite de ${formatFileSize(MAX_FILE_SIZE)}`);
+        const normalizedFile = await prepareUploadFile(file);
+
+        if (normalizedFile.size > MAX_FILE_SIZE) {
+          toast.error(`"${normalizedFile.name}" supera el límite de ${formatFileSize(MAX_FILE_SIZE)}`);
           continue;
         }
 
-        await apiUploadFile('files', file, {
+        await apiUploadFile('files', normalizedFile, {
           taskId: task.id,
           action: 'evidences',
           uploadedBy: userName,
@@ -143,24 +188,28 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
         uploadedAny = true;
 
         const newEvidence: TaskEvidence = {
-          id: `${file.name}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          fileName: file.name,
-          type: file.type,
-          size: file.size,
+          id: `${normalizedFile.name}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          fileName: normalizedFile.name,
+          type: normalizedFile.type,
+          size: normalizedFile.size,
           uploadedBy: userName,
           uploadedAt: new Date(),
-          url: normalizeEvidenceFileUrl(file.name),
+          url: normalizeEvidenceFileUrl(normalizedFile.name),
         };
 
         setEvidence((prev: TaskEvidence[]) => [...prev, newEvidence]);
-        toast.success(`"${file.name}" subido correctamente`);
+        toast.success(`"${normalizedFile.name}" subido correctamente`);
       }
 
       if (uploadedAny) {
         await onRefresh();
       }
     } catch (err: any) {
-      toast.error(err.message ?? 'Error al subir el archivo');
+      const message = err?.message ?? 'Error al subir el archivo';
+      const friendlyMessage = message.includes('Failed to fetch')
+        ? 'No se pudo completar la subida. Intenta nuevamente con una imagen más pequeña o revisa la conexión del servidor.'
+        : message;
+      toast.error(friendlyMessage);
     } finally {
       setUploading(false);
     }

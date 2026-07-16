@@ -1,3 +1,6 @@
+import { apiRequest } from "../apiClient";
+import { fetchProjects } from "./storage";
+
 export interface EvidenceItem {
   id: string;
   name: string;
@@ -51,10 +54,9 @@ export const addEvidence = (taskId: string, item: Omit<EvidenceItem, 'id' | 'upl
   return newItem;
 };
 
-export const deleteEvidence = (taskId: string, evidenceId: string) => {
-  const all = loadAll();
-  all[taskId] = (all[taskId] || []).filter((e) => e.id !== evidenceId);
-  saveAll(all);
+export const deleteEvidence = async (evidenceId: string) => {
+  console.log("envio de datos al eliminar: ", {action: "deleteEvidence", evidenceId});
+  await apiRequest("actionEvidences", {action: "DeleteEvidences", idTask : evidenceId}, "POST")
 };
 
 export const isImage = (type: string) =>

@@ -8,6 +8,7 @@ const filesEvidences_URL = import.meta.env.VITE_API_URL;
 import {
   formatFileSize,
   MAX_FILE_SIZE,
+  deleteEvidence
 } from '../lib/evidence';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -215,7 +216,8 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
     }
   }, [task.id, userName, onRefresh]);
 
-  const handleDelete = (identifier: string) => {
+  const handleDelete = async (identifier: string) => {
+    await deleteEvidence(identifier)
     setEvidence((prev: TaskEvidence[]) => prev.filter((item: TaskEvidence) => item.id !== identifier && item.fileName !== identifier));
     toast.success('Evidencia eliminada');
   };
@@ -338,7 +340,7 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
                       </div>
                       <button
                         onClick={() => handleDelete(item.id ?? item.fileName)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center  transition-opacity hover:bg-red-600"
                       >
                         <X className="w-3 h-3" />
                       </button>

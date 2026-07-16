@@ -340,7 +340,7 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
                       </div>
                       <button
                         onClick={() => handleDelete(item.id ?? item.fileName)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center  transition-opacity hover:bg-red-600"
+                        className="absolute top-2 right-2 z-20 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center  transition-opacity hover:bg-red-600"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -349,7 +349,7 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="absolute inset-0"
+                        className="absolute inset-0 z-0 pointer-events-auto"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>

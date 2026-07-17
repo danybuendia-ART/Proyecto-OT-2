@@ -74,11 +74,11 @@ export function ProjectsPage() {
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
       case 'active':
-        return 'default';
+        return 'bg-blue-400';
       case 'completed':
-        return 'default';
+        return 'bg-green-500';
       case 'on-hold':
-        return 'secondary';
+        return 'bg-yellow-500';
     }
   };
 
@@ -93,18 +93,18 @@ export function ProjectsPage() {
     }
   };
 
-  const getCardClass = (status: Project['status']) => {
-    switch (status) {
-      case 'active':
-        return 'md:bg-blue-100';   // borde azul para activos
-      case 'completed':
-        return 'md:bg-green-100';  // borde verde para completados
-      case 'on-hold':
-        return 'md:bg-yellow-100'; // borde amarillo para pausados
-      default:
-        return '';
-    }
-  };
+const getCardClass = (status: Project["status"]) => {
+  switch (status) {
+    case "active":
+      return "bg-blue-50";
+    case "completed":
+      return "bg-green-50";
+    case "on-hold":
+      return "bg-yellow-50";
+    default:
+      return "";
+  }
+};
 
   return (
     <div className="space-y-6">
@@ -195,71 +195,96 @@ export function ProjectsPage() {
           <CardContent className="text-center">
             <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">No tienes proyectos aún</p>
-            <p className="text-sm text-gray-400 mt-1">Crea tu primer proyecto para comenzar</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Crea tu primer proyecto para comenzar
+            </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => {
-            const completedTasks = project.tasks.filter(t => t.completed).length;
-            const totalTasks = project.tasks.length;
-            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        <div className="rounded-md border">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="p-3 text-left">Nombre</th>
+                <th className="p-3 text-left">Descripción</th>
+                <th className="p-3 text-left">Estado</th>
+                <th className="p-3 text-left">Progreso</th>
+                <th className="p-3 text-left">Fecha Creación</th>
+                <th className="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
 
-            //console.log(project.status)
-            //completed
-            //on-hold
-            //active
-            return (
-              <Card
-                key={project.id}
-                className={`hover:shadow-lg transition-shadow cursor-pointer ${getCardClass(project.status)}`}
-                onClick={() => navigate(`/project/${project.id}`)}
-              >
+            <tbody>
+              {projects.map((project) => {
+                const completedTasks = project.tasks.filter(
+                  (t) => t.completed
+                ).length;
 
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-xl">{project.name}</CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteProject(project.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </div>
-                  <CardDescription>{project.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getStatusColor(project.status)} className="flex items-center gap-1">
-                      {getStatusIcon(project.status)}
-                      {getStatusLabel(project.status)}
-                    </Badge>
-                  </div>
+                const totalTasks = project.tasks.length;
 
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-gray-600">Progreso de Tareas</span>
-                      <span className="font-medium">{completedTasks}/{totalTasks}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
+                const progress =
+                  totalTasks > 0
+                    ? (completedTasks / totalTasks) * 100
+                    : 0;
 
-                  <div className="text-xs text-gray-500">
-                    Creado: {project.createdAt.toLocaleDateString()}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                return (
+                  <tr
+                    key={project.id}
+                    className={"border-b hover:bg-gray-200 cursor-pointer"}
+                    onClick={() => navigate(`/project/${project.id}`)}
+                  >
+                    <td className="p-3 font-medium">
+                      {project.name}
+                    </td>
+
+                    <td className="p-3">
+                      {project.description}
+                    </td>
+
+                    <td className="p-3">
+                      <Badge
+                        className={`flex w-fit items-center gap-1 ${getStatusColor(project.status)}`}
+                      >
+                        {getStatusIcon(project.status)}
+                        {getStatusLabel(project.status)}
+                      </Badge>
+                    </td>
+
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-28 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <span className="text-sm">
+                          {completedTasks}/{totalTasks}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="p-3">
+                      {project.createdAt.toLocaleDateString()}
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProject(project.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

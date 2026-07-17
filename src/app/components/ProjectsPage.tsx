@@ -93,18 +93,18 @@ export function ProjectsPage() {
     }
   };
 
-const getCardClass = (status: Project["status"]) => {
-  switch (status) {
-    case "active":
-      return "bg-blue-50";
-    case "completed":
-      return "bg-green-50";
-    case "on-hold":
-      return "bg-yellow-50";
-    default:
-      return "";
-  }
-};
+  const getCardClass = (status: Project["status"]) => {
+    switch (status) {
+      case "active":
+        return "bg-blue-50";
+      case "completed":
+        return "bg-green-50";
+      case "on-hold":
+        return "bg-yellow-50";
+      default:
+        return "";
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -201,90 +201,92 @@ const getCardClass = (status: Project["status"]) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-md border">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="p-3 text-left">Nombre</th>
-                <th className="p-3 text-left">Descripción</th>
-                <th className="p-3 text-left">Estado</th>
-                <th className="p-3 text-left">Progreso</th>
-                <th className="p-3 text-left">Fecha Creación</th>
-                <th className="p-3 text-center">Acciones</th>
-              </tr>
-            </thead>
+        <div className="w-full overflow-x-auto">
+          <div className="rounded-md border">
+            <table className="w-full min-w-900px]">
+              <thead>
+                <tr className="border-b bg-gray-50">
+                  <th className="p-3 text-left">Nombre</th>
+                  <th className="p-3 text-left">Descripción</th>
+                  <th className="p-3 text-left">Estado</th>
+                  <th className="p-3 text-left">Progreso</th>
+                  <th className="p-3 text-left">Fecha Creación</th>
+                  <th className="p-3 text-center">Acciones</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {projects.map((project) => {
-                const completedTasks = project.tasks.filter(
-                  (t) => t.completed
-                ).length;
+              <tbody>
+                {projects.map((project) => {
+                  const completedTasks = project.tasks.filter(
+                    (t) => t.completed
+                  ).length;
 
-                const totalTasks = project.tasks.length;
+                  const totalTasks = project.tasks.length;
 
-                const progress =
-                  totalTasks > 0
-                    ? (completedTasks / totalTasks) * 100
-                    : 0;
+                  const progress =
+                    totalTasks > 0
+                      ? (completedTasks / totalTasks) * 100
+                      : 0;
 
-                return (
-                  <tr
-                    key={project.id}
-                    className={"border-b hover:bg-gray-200 cursor-pointer"}
-                    onClick={() => navigate(`/project/${project.id}`)}
-                  >
-                    <td className="p-3 font-medium">
-                      {project.name}
-                    </td>
+                  return (
+                    <tr
+                      key={project.id}
+                      className={"border-b hover:bg-gray-200 cursor-pointer"}
+                      onClick={() => navigate(`/project/${project.id}`)}
+                    >
+                      <td className="p-3 font-medium">
+                        {project.name}
+                      </td>
 
-                    <td className="p-3">
-                      {project.description}
-                    </td>
+                      <td className="p-3">
+                        {project.description}
+                      </td>
 
-                    <td className="p-3">
-                      <Badge
-                        className={`flex w-fit items-center gap-1 ${getStatusColor(project.status)}`}
-                      >
-                        {getStatusIcon(project.status)}
-                        {getStatusLabel(project.status)}
-                      </Badge>
-                    </td>
+                      <td className="p-3">
+                        <Badge
+                          className={`flex w-fit items-center gap-1 ${getStatusColor(project.status)}`}
+                        >
+                          {getStatusIcon(project.status)}
+                          {getStatusLabel(project.status)}
+                        </Badge>
+                      </td>
 
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-28 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${progress}%` }}
-                          />
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-28 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <span className="text-sm">
+                            {completedTasks}/{totalTasks}
+                          </span>
                         </div>
-                        <span className="text-sm">
-                          {completedTasks}/{totalTasks}
-                        </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="p-3">
-                      {project.createdAt.toLocaleDateString()}
-                    </td>
+                      <td className="p-3">
+                        {project.createdAt.toLocaleDateString()}
+                      </td>
 
-                    <td className="p-3 text-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteProject(project.id);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td className="p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProject(project.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

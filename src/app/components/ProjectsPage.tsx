@@ -48,7 +48,6 @@ export function ProjectsPage() {
 
   const loadProjects = async () => {
     const data = await fetchProjects();
-
     setProjects(data);
   };
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -272,7 +271,9 @@ export function ProjectsPage() {
                   <th className="p-3 text-left">Estado</th>
                   <th className="p-3 text-left">Progreso</th>
                   <th className="p-3 text-left">Responsable</th>
-                  <th className="p-3 text-left">Fecha</th>
+                  <th className="p-3 text-left">Fecha Creación</th>
+                  <th className="p-3 text-left">Fecha Modificación</th>
+                  <th className="p-3 text-left">Fecha Aprobado</th>
                 </tr>
               </thead>
 
@@ -354,6 +355,16 @@ export function ProjectsPage() {
                       <td className="p-3">
                         {project.createdAt.toLocaleDateString()}
                       </td>
+                      <td className="p-3">
+                        {project.modificationDate
+                          ? new Date(project.modificationDate).toLocaleString()
+                          : "----"}
+                      </td>
+                      <td className="p-3">
+                        {project.approvedDate
+                          ? new Date(project.approvedDate).toLocaleString()
+                          : "----"}
+                      </td>
                     </tr>
                   );
                 })}
@@ -386,6 +397,8 @@ export function ProjectsPage() {
                   <th className="p-3 text-left">Progreso</th>
                   <th className="p-3 text-left">Responsable</th>
                   <th className="p-3 text-left">Fecha Creación</th>
+                  <th className="p-3 text-left">Fecha Modificación</th>
+                  <th className="p-3 text-left">Fecha Aprobado</th>
                   {/*<th className="p-3 text-center">Acciones</th>*/}
                 </tr>
               </thead>
@@ -454,7 +467,16 @@ export function ProjectsPage() {
                       <td className="p-3">
                         {project.createdAt.toLocaleDateString()}
                       </td>
-
+                      <td className="p-3">
+                        {project.modificationDate
+                          ? new Date(project.modificationDate).toLocaleString()
+                          : "----"}
+                      </td>
+                      <td className="p-3">
+                        {project.approvedDate
+                          ? new Date(project.approvedDate).toLocaleString()
+                          : "----"}
+                      </td>
                       {/*<td className="p-3 text-center">
                         <Button
                           variant="ghost"

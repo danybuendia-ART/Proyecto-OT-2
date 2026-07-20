@@ -49,6 +49,7 @@ const parseProject = (p: any): Project => ({
     : [],
     employee: p.employee,
     priority: Boolean(p.priority),
+    modificationDate: p.modificationDate,
     approvedDate: p.approvedDate
 });
 
@@ -63,6 +64,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
   try {
     const response: any = await apiRequest('proyectos', null, 'GET');
     const projects = normalizeProjectsResponse(response);
+    console.log("datos obtenidos: ",projects.map(parseProject))
     return projects.map(parseProject);
   } catch (error) {
     console.error('Error fetching projects:', error);

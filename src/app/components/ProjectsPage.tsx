@@ -16,7 +16,6 @@ import { toast } from 'sonner';
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectsPrioritys, setPriority] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   /*const [newProject, setNewProject] = useState({
@@ -120,6 +119,11 @@ export function ProjectsPage() {
         return "";
     }
   };
+
+
+  const projectsPrioritys = projects.filter(
+    (project) => project.priority
+  );
 
   return (
     <div className="space-y-6">
@@ -249,6 +253,115 @@ export function ProjectsPage() {
           </DialogContent>
         </Dialog>
       </div>
+      {projectsPrioritys.length > 0 && (
+        <Card className="border-amber-300 bg-amber-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Flame className="w-5 h-5 text-amber-500" />
+              Proyectos Prioritarios
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="p-3 text-left">Nombre</th>
+                  <th className="p-3 text-left">Descripcion</th>
+                  <th className="p-3 text-left">Prioridad</th>
+                  <th className="p-3 text-left">Estado</th>
+                  <th className="p-3 text-left">Progreso</th>
+                  <th className="p-3 text-left">Responsable</th>
+                  <th className="p-3 text-left">Fecha</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {projectsPrioritys.map((project) => {
+                  const completedTasksPriority = project.tasks.filter(
+                    (task) => task.completed
+                  ).length;
+
+                  const totalTasksPriority = project.tasks.length;
+
+                  const progressPriority =
+                    totalTasksPriority > 0
+                      ? (completedTasksPriority / totalTasksPriority) * 100
+                      : 0;
+
+                  return (
+                    <tr
+                      key={project.id}
+                      className="cursor-pointer hover:bg-amber-100"
+                      onClick={() => navigate(`/project/${project.id}`)}
+                    >
+                      <td className="p-3 font-medium">
+                        {project.name}
+                      </td>
+
+                      <td className="p-3 font-medium">
+                        {project.description}
+                      </td>
+
+                      <td
+                        className="p-3 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          checked={project.priority}
+                          onCheckedChange={async (checked) => {
+                            const response = await changePriority(
+                              project.id,
+                              checked
+                            );
+
+                            await loadProjects();
+                            toast.success(response);
+                          }}
+                        />
+                      </td>
+
+                      <td className="p-3">
+                        <Badge
+                          className={`flex w-fit items-center gap-1 ${getStatusColor(
+                            project.status
+                          )}`}
+                        >
+                          {getStatusIcon(project.status)}
+                          {getStatusLabel(project.status)}
+                        </Badge>
+                      </td>
+
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-28 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: `${progressPriority}%` }}
+                            />
+                          </div>
+
+                          <span className="text-sm">
+                            {completedTasksPriority}/{totalTasksPriority}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="p-3">
+                        {project.employee ?? "----"}
+                      </td>
+
+                      <td className="p-3">
+                        {project.createdAt.toLocaleDateString()}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
 
       {projects.length === 0 ? (
         <Card className="py-12">
@@ -282,10 +395,7 @@ export function ProjectsPage() {
                   const completedTasks = project.tasks.filter(
                     (t) => t.completed
                   ).length;
-                  if (project.priority === true) {
-                    projectsPrioritys.push(project);
-                    console.log("agrego proyecto: ", projectsPrioritys);
-                  }
+
                   const totalTasks = project.tasks.length;
 
                   const progress =
@@ -296,7 +406,7 @@ export function ProjectsPage() {
                   return (
                     <tr
                       key={project.id}
-                      className={"border-b hover:bg-gray-200 cursor-pointer"}
+                      className={`border-b hover:bg-gray-200 cursor-pointer ${project.priority == true ? "bg-amber-100 border-4 border-orange-100" : ""}`}
                       onClick={() => navigate(`/project/${project.id}`)}
                     >
                       <td className="p-3 font-medium">
@@ -345,7 +455,7 @@ export function ProjectsPage() {
                         {project.createdAt.toLocaleDateString()}
                       </td>
 
-                {/*<td className="p-3 text-center">
+                      {/*<td className="p-3 text-center">
                         <Button
                           variant="ghost"
                           size="icon"

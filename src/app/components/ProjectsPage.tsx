@@ -273,7 +273,7 @@ export function ProjectsPage() {
                   <th className="p-3 text-left">Progreso</th>
                   <th className="p-3 text-left">Responsable</th>
                   <th className="p-3 text-left">Fecha Creación</th>
-                  <th className="p-3 text-center">Acciones</th>
+                  {/*<th className="p-3 text-center">Acciones</th>*/}
                 </tr>
               </thead>
 
@@ -345,7 +345,7 @@ export function ProjectsPage() {
                         {project.createdAt.toLocaleDateString()}
                       </td>
 
-                      <td className="p-3 text-center">
+                {/*<td className="p-3 text-center">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -356,7 +356,7 @@ export function ProjectsPage() {
                         >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
-                      </td>
+                      </td>*/}
                     </tr>
                   );
                 })}

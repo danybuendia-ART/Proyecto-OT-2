@@ -27,9 +27,26 @@ export interface Project {
   name: string;
   description: string;
   status: 'active' | 'completed' | 'on-hold';
+
   createdAt: Date;
   completedAt?: Date;
+
   tasks: Task[];
+
+  employee?: string;
+
+  priority: boolean;
+
+  modificationDate?: string;
+  approvedDate?: string;
+}
+
+export interface CreateProjectDto {
+  name: string;
+  description: string;
+  status: Project['status'];
+  employee: string;
+  priority: Boolean
 }
 
 export type MaterialPriority = 'urgente' | 'alta' | 'normal' | 'baja';

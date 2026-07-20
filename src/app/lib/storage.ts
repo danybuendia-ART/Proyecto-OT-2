@@ -1,4 +1,4 @@
-import { Project, Task } from './types';
+import { CreateProjectDto, Project, Task } from './types';
 import { apiRequest, decryptData } from '../apiClient';
 import { getCurrentUser } from '../lib/auth';
 
@@ -47,6 +47,9 @@ const parseProject = (p: any): Project => ({
       evidences: Array.isArray(t.evidences) ? t.evidences.map(parseEvidenceItem) : [],
     }))
     : [],
+    employee: p.employee,
+    priority: Boolean(p.priority),
+    approvedDate: p.approvedDate
 });
 
 const normalizeProjectsResponse = (response: any): any[] => {
@@ -59,7 +62,6 @@ const normalizeProjectsResponse = (response: any): any[] => {
 export const fetchProjects = async (): Promise<Project[]> => {
   try {
     const response: any = await apiRequest('proyectos', null, 'GET');
-    console.log(response)
     const projects = normalizeProjectsResponse(response);
     return projects.map(parseProject);
   } catch (error) {
@@ -95,7 +97,7 @@ export const getProject = (id: string): Project | undefined => {
   return getProjects().find(p => p.id === id);
 };
 
-export const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'tasks'>) => {
+export const addProject = async (project: CreateProjectDto) => {
   const currentUser = getCurrentUser();
   const informacion: object = {
     action: "create",
@@ -103,6 +105,8 @@ export const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'ta
     descripcion: project.description,
     estatus: project.status,
     fk_usuario: currentUser?.id,
+    employee: project.employee,
+    priority: project.priority,
   }
 
   const response: any = await apiRequest("proyectos", informacion, "POST");
@@ -114,24 +118,21 @@ export const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'ta
   } else {
     return null;
   }
-  /*const projects = getProjects();
-  const newProject: Project = {
-    ...project,
-    id: Date.now().toString(),
-    createdAt: new Date(),
-    tasks: [],
-  };
-  projects.push(newProject);
-  saveProjects(projects);
-  return newProject;*/
 };
 
 export const updateProject = async (id: string, updates: Partial<Project>) => {
   const status = updates.status;
-  console.log("datos para enviar", id, status)
 
   await apiRequest("proyectos", { id, updates, action: "modifyStatus" }, "POST")
 };
+
+export const changePriority = async (id: string, priority: boolean | string) =>{
+  const response = await apiRequest("proyectos", {action: "changePriority" , id, status: priority})
+  const result = decryptData(response);
+  if(result.message){
+    return result.message;
+  }
+}
 
 export const deleteProject = async (id: string) => {
   //const projects = getProjects().filter(p => p.id !== id);
@@ -166,7 +167,6 @@ export const updateTask = async (projectId: string, taskId: string, updates: Par
 export const deleteTask = async (projectId: string, taskId: string) => {
   try {
     await apiRequest("tasks", { action: "Delete", taskId }, "POST");
-    //console.log(decryptData(response));
   } catch (e) {
     console.error("error en la solicitud")
   }

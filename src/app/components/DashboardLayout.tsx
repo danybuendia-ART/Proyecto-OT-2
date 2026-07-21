@@ -46,7 +46,7 @@ export function DashboardLayout() {
             onClick={() => navigate('/')}
           >
             <div className="w-32 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-              <img src={logo} alt='logo' className='w-100 h-20'/>
+              <img src={logo} alt='logo' className='w-300 h-30'/>
             </div>
             <div className="text-left hidden sm:block">
               <h1 className="font-semibold text-sm leading-tight">Sistema Manteniniento OT SIRAGS</h1>

@@ -47,10 +47,10 @@ const parseProject = (p: any): Project => ({
       evidences: Array.isArray(t.evidences) ? t.evidences.map(parseEvidenceItem) : [],
     }))
     : [],
-    employee: p.employee,
-    priority: Boolean(p.priority),
-    modificationDate: p.modificationDate,
-    approvedDate: p.approvedDate
+  employee: p.employee,
+  priority: Boolean(p.priority),
+  modificationDate: p.modificationDate,
+  approvedDate: p.approvedDate
 });
 
 const normalizeProjectsResponse = (response: any): any[] => {
@@ -64,7 +64,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
   try {
     const response: any = await apiRequest('proyectos', null, 'GET');
     const projects = normalizeProjectsResponse(response);
-    console.log("datos obtenidos: ",projects.map(parseProject))
+    console.log("datos obtenidos: ", projects.map(parseProject))
     return projects.map(parseProject);
   } catch (error) {
     console.error('Error fetching projects:', error);
@@ -128,17 +128,17 @@ export const updateProject = async (id: string, updates: Partial<Project>) => {
   await apiRequest("proyectos", { id, updates, action: "modifyStatus" }, "POST")
 };
 
-export const changePriority = async (id: string, priority: boolean | string) =>{
-  const response = await apiRequest("proyectos", {action: "changePriority" , id, status: priority})
+export const changePriority = async (id: string, priority: boolean | string) => {
+  const response = await apiRequest("proyectos", { action: "changePriority", id, status: priority })
   const result = decryptData(response);
-  if(result.message){
+  if (result.message) {
     return result.message;
   }
 }
 
 export const deleteProject = async (id: string) => {
   //const projects = getProjects().filter(p => p.id !== id);
-  await apiRequest("proyectos", {action: "disabledProyect", id}, "POST");
+  await apiRequest("proyectos", { action: "disabledProyect", id }, "POST");
   //saveProjects(projects);
 };
 
@@ -316,6 +316,9 @@ const getStoredEmployees = (): Employee[] => {
   saveEmployees(initialEmployees);
   return initialEmployees;
 };
+
+const isImage = (fileName: string) =>
+  /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName);
 
 export const getEmployees = async (): Promise<Employee[]> => {
   try {

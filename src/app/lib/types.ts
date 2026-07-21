@@ -6,6 +6,7 @@ export interface TaskEvidence {
   size?: number;
   uploadedAt?: Date;
   uploadedBy?: string;
+  startDate?: string;
 }
 
 export interface Task {
@@ -20,6 +21,13 @@ export interface Task {
   dueDate?: Date;
   assignedTo?: string;
   evidences?: TaskEvidence[];
+}
+
+export interface Evidence {
+  id: string;
+  fileName: string;
+  url: string;
+  createdAt?: string;
 }
 
 export interface Project {

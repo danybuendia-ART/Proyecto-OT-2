@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Form } from 'react-router';
-import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees } from '../lib/storage';
+import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees, isImage } from '../lib/storage';
+import { deleteEvidence } from '../lib/evidence';
 import { apiRequest } from '../apiClient';
 import { Employee } from '../lib/types';
 import { Project, Task, DEMO_WORKERS } from '../lib/types';
@@ -23,8 +24,12 @@ import {
   ListTodo,
   User,
   CalendarDays,
+  Paperclip,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { p } from 'node_modules/react-router/dist/development/index-react-server-client-CACgcj2J.mjs';
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -32,6 +37,7 @@ export function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [expandedEvidence, setExpandedEvidence] = useState<Set<string>>(new Set());
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -91,12 +97,12 @@ export function ProjectDetailPage() {
     e.preventDefault();
     if (projectId) {
 
-      if(newTask.quantity == 0){
+      if (newTask.quantity == 0) {
         return toast.warning("la cantidad no puede ser 0");
       }
-      if(newTask.assignedTo == "") {
-        return toast.warning("Se requiere asignar un trabajador"); 
-      } 
+      if (newTask.assignedTo == "") {
+        return toast.warning("Se requiere asignar un trabajador");
+      }
       addTask(projectId, newTask);
       setIsDialogOpen(false);
       setNewTask({ title: '', description: '', unit: '', quantity: 0, completed: false, assignedTo: '', dueDate: undefined });
@@ -116,7 +122,7 @@ export function ProjectDetailPage() {
     }
   };
 
-  const handleToggleTask =async (taskId: string, completed: boolean) => {
+  const handleToggleTask = async (taskId: string, completed: boolean) => {
     if (projectId) {
       await updateTask(projectId, taskId, { completed });
       loadProject();
@@ -167,6 +173,14 @@ export function ProjectDetailPage() {
       case 'on-hold':
         return 'En Pausa';
     }
+  };
+
+  const toggleEvidence = (taskId: string) => {
+    setExpandedEvidence(prev => {
+      const next = new Set(prev);
+      next.has(taskId) ? next.delete(taskId) : next.add(taskId);
+      return next;
+    });
   };
 
   return (
@@ -310,7 +324,7 @@ export function ProjectDetailPage() {
                 <Label htmlFor="assignedTo">Asignar a (trabajador)</Label>
                 <Select
                   value={newTask.assignedTo}
-                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })} 
+                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
                 >
                   <SelectTrigger id="assignedTo">
                     <SelectValue placeholder="Seleccionar trabajador" />
@@ -349,9 +363,12 @@ export function ProjectDetailPage() {
           </CardContent>
         </Card>
       ) : (
+
         <div className="space-y-3">
-          {project.tasks.map((task) => (
-            <Card key={task.id} className={task.completed ? 'bg-gray-50' : ''}>
+          {project.tasks.map((task) => {
+            const evidenceCount = task.evidences?.length ?? 0;
+            const isOpen = expandedEvidence.has(task.id);
+            return <Card key={task.id} className={task.completed ? 'bg-gray-50' : ''}>
               <CardContent className="py-4">
                 <div className="flex items-start gap-4">
                   <Checkbox
@@ -407,11 +424,76 @@ export function ProjectDetailPage() {
                     <p className="text-xs text-gray-500 mt-2">
                       Creada: {task.createdAt.toLocaleDateString()}
                     </p>
+                    {/*Evidencias agregadas */}
+                    <button
+                      onClick={() => toggleEvidence(task.id)}
+                      className={`flex items-center gap-1.5 text-xs font-medium transition-colors rounded-md px-2 py-1
+                        ${isOpen
+                          ? 'text-blue-600 bg-blue-50'
+                          : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                        }`}
+                    >
+                      <Paperclip className="w-3.5 h-3.5" />
+
+                      {evidenceCount > 0
+                        ? `${evidenceCount} evidencia${evidenceCount > 1 ? 's' : ''}`
+                        : 'Sin evidencias'}
+
+                      {isOpen
+                        ? <ChevronUp className="w-3 h-3" />
+                        : <ChevronDown className="w-3 h-3" />
+                      }
+                    </button>
+                    {isOpen && (
+                      <div className='mt-3 space-y-2'>
+                        {task.evidences?.map(evidence => (
+                          < div
+                            key={evidence.id}
+                            className='relative border rounded-lg overflow-hidden bg-white p-3'>
+                            <div>
+                              <div className='flex items-start justify-between'>
+                                <p className='font-medium text-sm'>
+                                  {evidence.fileName}
+                                </p>
+                                <Button 
+                                variant = "ghost"
+                                size= "icon"
+                                onClick={()=> deleteEvidence(String(evidence.id))}
+                                >
+                                  <Trash2 className='w-4 h-4 text-red-500'/>
+                                </Button>
+                              </div>
+                              <div className='text-xs text-gray-500 space-y-1'>
+                                {evidence.uploadedBy && (
+                                  <p>Subido por: {evidence.uploadedBy}</p>
+                                )}
+
+                                {evidence.startDate && (
+                                  <p>Fecha: {" "}{new Date(evidence.startDate).toLocaleDateString()}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className='flex gap-2'>
+                              {evidence.url && (
+                                <a
+                                  href={evidence.url}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+
+                                ></a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+          }
+          )}
         </div>
       )}
     </div>

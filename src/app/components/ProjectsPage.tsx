@@ -18,18 +18,11 @@ export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  /*const [newProject, setNewProject] = useState({
-    name: '',
-    description: '',
-    status: 'active' as Project['status'],
-    employee: ''
-  });*/
-
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
     status: 'active' as Project['status'],
-    employee: '',
+    employee: "",
     priority: false
   });
   const navigate = useNavigate();
@@ -52,17 +45,17 @@ export function ProjectsPage() {
   };
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addProject(newProject);
-    setIsDialogOpen(false);
-    setNewProject({
-      name: '',
-      description: '',
-      status: 'active',
-      employee: '',
-      priority: false
-    });
-    await loadProjects();
-    toast.success('Proyecto creado exitosamente');
+
+    try {
+      await addProject(newProject);
+      toast.success('Proyecto creado');
+
+      window.location.reload();
+
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al crear proyecto');
+    }
   };
 
   const handleDeleteProject = (id: string) => {
@@ -175,7 +168,7 @@ export function ProjectsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="status">Estado</Label>
-                  <Select
+                  <Select required
                     value={newProject.status}
                     onValueChange={(value: Project["status"]) =>
                       setNewProject({ ...newProject, status: value })
@@ -185,7 +178,7 @@ export function ProjectsPage() {
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position='popper'>
                       <SelectItem value="active">Activo</SelectItem>
                       <SelectItem value="completed">Completado</SelectItem>
                       <SelectItem value="on-hold">En Pausa</SelectItem>
@@ -194,21 +187,27 @@ export function ProjectsPage() {
                 </div>
                 <div>
                   <Label htmlFor="responsible">Responsable</Label>
-                  <Select
+                  <select
+                    className="w-full border rounded p-2"
                     value={newProject.employee}
-                    onValueChange={(v) =>
-                      setNewProject({ ...newProject, employee: v })
+                    onChange={(e) =>
+                      setNewProject(prev => ({
+                        ...prev,
+                        employee: e.target.value,
+                      }))
                     }
                   >
-                    <SelectTrigger id="responsible">
-                      <SelectValue placeholder="Seleccionar..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {employees.map(w => (
-                        <SelectItem key={w.id} value={w.id.toString()}>{w.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Seleccionar...</option>
+
+                    {employees.map((w) => (
+                      <option
+                        key={w.id}
+                        value={w.id}
+                      >
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50">

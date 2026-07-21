@@ -29,7 +29,6 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { p } from 'node_modules/react-router/dist/development/index-react-server-client-CACgcj2J.mjs';
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -322,26 +321,33 @@ export function ProjectDetailPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assignedTo">Asignar a (trabajador)</Label>
-                <Select
+                <select
+                  id="assignedTo"
+                  required
+                  className="w-full border rounded-md p-2"
                   value={newTask.assignedTo}
-                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
+                  onChange={(e) =>
+                    setNewTask({
+                      ...newTask,
+                      assignedTo: e.target.value,
+                    })
+                  }
                 >
-                  <SelectTrigger id="assignedTo">
-                    <SelectValue placeholder="Seleccionar trabajador" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees.length > 0 ? (
-                      employees.map((w) => (
-                        <SelectItem key={w.id} value={w.name}>{w.name}</SelectItem>
-                      ))
-                    ) : (
-                      // Fallback to demo workers if API/local list is empty
-                      DEMO_WORKERS.map((w) => (
-                        <SelectItem key={w} value={w}>{w}</SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                  <option value="">Seleccionar trabajador</option>
+
+                  {employees.length > 0
+                    ? employees.map((w) => (
+                      <option key={w.id} value={w.name}>
+                        {w.name}
+                      </option>
+                    ))
+                    : DEMO_WORKERS.map((w) => (
+                      <option key={w} value={w}>
+                        {w}
+                      </option>
+                    ))}
+                </select>
+
               </div>
               <div className="flex gap-2 justify-end">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -455,12 +461,12 @@ export function ProjectDetailPage() {
                                 <p className='font-medium text-sm'>
                                   {evidence.fileName}
                                 </p>
-                                <Button 
-                                variant = "ghost"
-                                size= "icon"
-                                onClick={()=> deleteEvidence(String(evidence.id))}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => deleteEvidence(String(evidence.id))}
                                 >
-                                  <Trash2 className='w-4 h-4 text-red-500'/>
+                                  <Trash2 className='w-4 h-4 text-red-500' />
                                 </Button>
                               </div>
                               <div className='text-xs text-gray-500 space-y-1'>

@@ -317,7 +317,7 @@ const getStoredEmployees = (): Employee[] => {
   return initialEmployees;
 };
 
-const isImage = (fileName: string) =>
+export  const isImage = (fileName: string) =>
   /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName);
 
 export const getEmployees = async (): Promise<Employee[]> => {

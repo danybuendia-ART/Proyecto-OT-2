@@ -109,6 +109,14 @@ export interface Employee {
   overtimeRecords: OvertimeRecord[];
 }
 
+export interface Profile {
+  id: number,
+  nombre: string,
+  permiso: number,
+  correo: string,
+  activo: number
+}
+
 export const DEMO_WORKERS = [
 
 ];

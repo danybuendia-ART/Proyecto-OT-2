@@ -10,6 +10,7 @@ import { DashboardOverviewPage } from "./components/DashboardOverviewPage";
 import { PurchasesPage } from "./components/PurchasesPage";
 import { HumanCapitalPage } from "./components/HumanCapitalPage";
 import { EmployeeDetailPage } from "./components/EmployeeDetailPage";
+import { ManagementUsers } from "./components/ManagementUsers";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ export const router = createBrowserRouter([
           {
             path: "human-capital/:employeeId",
             Component: EmployeeDetailPage,
+          },
+          {
+            path: "ManagementUsers",
+            Component: ManagementUsers,
           },
         ],
       },

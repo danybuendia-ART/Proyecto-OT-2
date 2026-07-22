@@ -317,7 +317,7 @@ const getStoredEmployees = (): Employee[] => {
   return initialEmployees;
 };
 
-export  const isImage = (fileName: string) =>
+export const isImage = (fileName: string) =>
   /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName);
 
 export const getEmployees = async (): Promise<Employee[]> => {
@@ -435,3 +435,21 @@ export const deleteCertification = (employeeId: string, certId: string) => {
   emp.certifications = emp.certifications.filter(c => c.id !== certId);
   saveEmployees(employees);
 };
+
+export const getUsers = async () => {
+  const response = await apiRequest("usuarios", {}, "GET");
+  const listUsers = decryptData(response);
+
+  return listUsers;
+}
+
+export const changePermiso = async (id: number, permiso: number) => {
+  const response = await apiRequest("usuarios", { action: "changePermiso", id, permiso });
+  const message = decryptData(response);
+  return message;
+}
+export const activeUser = async (id: number, value: number) => {
+  const response = await apiRequest("usuarios", { action: "activeUser", id, value });
+  const message = decryptData(response);
+  return message;
+}

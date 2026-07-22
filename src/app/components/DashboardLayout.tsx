@@ -12,7 +12,7 @@ import {
 } from './ui/dropdown-menu';
 import { LogOut, User, BarChart3, CalendarDays, FolderOpen, ChartNoAxesCombined, ShoppingCart, Users, Menu } from 'lucide-react';
 
-const NAV_LINKS = [
+let NAV_LINKS = [
   { to: '/', label: 'Proyectos', icon: FolderOpen },
   { to: '/dashboard', label: 'Avance porcentual', icon: ChartNoAxesCombined },
   { to: '/calendar', label: 'Calendario', icon: CalendarDays },
@@ -25,7 +25,38 @@ export function DashboardLayout() {
   const location = useLocation();
   const user = getCurrentUser();
   const userName = user?.nombre ?? 'usuario';
+  const permiso = user?.permiso;
 
+  switch (permiso) {
+    case 1:
+      NAV_LINKS = [
+        { to: '/', label: 'Proyectos', icon: FolderOpen },
+        { to: '/dashboard', label: 'Avance porcentual', icon: ChartNoAxesCombined },
+        { to: '/calendar', label: 'Calendario', icon: CalendarDays },
+        { to: '/purchases', label: 'Compras', icon: ShoppingCart },
+        { to: '/human-capital', label: 'Capital Humano', icon: Users },
+
+      ]
+      break;
+    case 2:
+      NAV_LINKS = [
+        { to: '/', label: 'Proyectos', icon: FolderOpen },
+        { to: '/dashboard', label: 'Avance porcentual', icon: ChartNoAxesCombined },
+        { to: '/calendar', label: 'Calendario', icon: CalendarDays },
+        { to: '/purchases', label: 'Compras', icon: ShoppingCart },
+      ]
+      break;
+    case 3:
+      NAV_LINKS = [
+        { to: '/', label: 'Proyectos', icon: FolderOpen },
+        { to: '/dashboard', label: 'Avance porcentual', icon: ChartNoAxesCombined },
+        { to: '/calendar', label: 'Calendario', icon: CalendarDays },
+        { to: '/purchases', label: 'Compras', icon: ShoppingCart },
+      ]
+      break;
+    default:
+      break;
+  }
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -46,7 +77,7 @@ export function DashboardLayout() {
             onClick={() => navigate('/')}
           >
             <div className="w-32 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-              <img src={logo} alt='logo' className='w-300 h-30'/>
+              <img src={logo} alt='logo' className='w-300 h-30' />
             </div>
             <div className="text-left hidden sm:block">
               <h1 className="font-semibold text-sm leading-tight">Sistema Manteniniento OT SIRAGS</h1>
@@ -98,6 +129,12 @@ export function DashboardLayout() {
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Mi cuenta
               </DropdownMenuItem>
+              {permiso === 1 && (
+                <DropdownMenuItem onClick={() => navigate("/ManagementUsers")}>
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Administración Usuarios
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="w-4 h-4 mr-2" />
                 Cerrar sesión
@@ -125,6 +162,12 @@ export function DashboardLayout() {
                 <User className="w-4 h-4 mr-2" />
                 Mi cuenta
               </DropdownMenuItem>
+              {permiso === 1 && (
+                <DropdownMenuItem onClick={() => navigate("/ManagementUsers")}>
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Administración Usuarios
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="w-4 h-4 mr-2" />

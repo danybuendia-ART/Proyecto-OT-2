@@ -43,6 +43,21 @@ const WORKER_COLORS = [
 
 export function AccountPage() {
   const user = getCurrentUser();
+  const permiso = user?.permiso;
+  let textPermiso: string = "";
+  switch (permiso) {
+    case 1:
+      textPermiso = "Administrador";
+      break;
+    case 2:
+      textPermiso = "Cliente";
+      break;
+    case 3:
+      textPermiso = "Supervisor";
+      break;
+    default:
+      break;
+  }
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -159,10 +174,10 @@ export function AccountPage() {
           <h2 className="text-3xl font-semibold">Mi Cuenta</h2>
           <p className="text-gray-500 mt-1">Analíticas y rendimiento del equipo</p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleResetData}>
+        {/*<Button variant="outline" size="sm" onClick={handleResetData}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Restaurar datos demo
-        </Button>
+        </Button>*/}
       </div>
 
       {/* User profile */}
@@ -175,7 +190,7 @@ export function AccountPage() {
             <div>
               <p className="text-xl font-semibold">{user?.nombre}</p>
               <p className="text-gray-500">{user?.correo}</p>
-              <Badge variant="secondary" className="mt-1">Administrador</Badge>
+              <Badge variant="secondary" className="mt-1">{textPermiso}</Badge>
             </div>
           </div>
         </CardContent>

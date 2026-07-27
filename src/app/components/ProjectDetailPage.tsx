@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Form } from 'react-router';
 import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees, isImage } from '../lib/storage';
-import { deleteEvidence } from '../lib/evidence';
-import { apiRequest } from '../apiClient';
+import { deleteEvidence, formatFileSize, MAX_FILE_SIZE } from '../lib/evidence';
+import { apiRequest, apiUploadFile } from '../apiClient';
 import { Employee } from '../lib/types';
 import { Project, Task, DEMO_WORKERS } from '../lib/types';
 import { Button } from './ui/button';
@@ -26,9 +26,83 @@ import {
   CalendarDays,
   Paperclip,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getCurrentUser } from '../lib/auth';
+
+const infoUser = getCurrentUser();
+const userName = infoUser?.nombre;
+
+const filesEvidences_URL = import.meta.env.VITE_API_URL;
+
+const EVIDENCE_BASE_URL = import.meta.env.VITE_API_PROXY_TARGET + '/evidences/';
+
+const normalizeEvidenceFileUrl = (fileName: string) => {
+  const encodedFileName = fileName.split('/').map(encodeURIComponent).join('/');
+  return `${EVIDENCE_BASE_URL.replace(/\/+$|^\s+/, '')}/${encodedFileName}`;
+};
+
+const resolveEvidenceUrl = (item: { url?: string; fileName: string }) => {
+  if (!item.url) {
+    return normalizeEvidenceFileUrl(item.fileName);
+  }
+
+  try {
+    const baseUrl = filesEvidences_URL || EVIDENCE_BASE_URL;
+    return new URL(item.url, baseUrl).href;
+  } catch {
+    return normalizeEvidenceFileUrl(item.fileName);
+  }
+};
+
+const isImageEvidence = (item: { type?: string; fileName: string }) =>
+  item.type?.startsWith('image/') || /\.(jpe?g|png|gif|webp|svg)$/i.test(item.fileName);
+
+const prepareUploadFile = async (file: File): Promise<File> => {
+  if (!file.type.startsWith('image/')) return file;
+
+  const shouldCompress = file.size > 2 * 1024 * 1024 || ['image/heic', 'image/heif', 'image/avif'].includes(file.type);
+  if (!shouldCompress) return file;
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 1600;
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      bitmap.close();
+      return file;
+    }
+
+    context.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (result) resolve(result);
+        else reject(new Error('No se pudo comprimir la imagen'));
+      }, 'image/jpeg', 0.85);
+    });
+
+    bitmap.close();
+
+    return new File(
+      [blob],
+      file.name.replace(/\.(heic|heif|avif|png|webp|jpe?g)$/i, '.jpg'),
+      { type: 'image/jpeg', lastModified: Date.now() }
+    );
+  } catch {
+    return file;
+  }
+};
+
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -46,6 +120,8 @@ export function ProjectDetailPage() {
     assignedTo: '',
     dueDate: undefined as Date | undefined,
   });
+  const [uploading, setUploading] = useState(false);
+
 
   useEffect(() => {
     const load = async () => {
@@ -130,7 +206,7 @@ export function ProjectDetailPage() {
 
   const handleDeleteTask = async (taskId: string) => {
     if (confirm('¿Estás seguro de eliminar esta tarea?') && projectId) {
-      await deleteTask(projectId, taskId);
+      await deleteEvidence(taskId);
       loadProject();
       toast.success('Tarea eliminada');
     }
@@ -174,6 +250,47 @@ export function ProjectDetailPage() {
     }
   };
 
+  const handleUploadEvidence = async (
+    taskId: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+
+    let uploadedAny = false;
+
+    try {
+      for (let file of Array.from(files)) {
+        const normalized = await prepareUploadFile(file);
+
+        if (normalized.size > MAX_FILE_SIZE) {
+          toast.error(`"${normalized.name}" supera el limite de ${formatFileSize(MAX_FILE_SIZE)}`);
+          continue;
+        }
+
+        await apiUploadFile("files", normalized, {
+          taskId, action: "evidences",
+          uploadedBy: userName
+        })
+
+        uploadedAny = true;
+
+        toast.success(`"${normalized.name}" subido correctamente`);
+
+        if (uploadedAny) {
+          await loadProject();
+        }
+      }
+    } catch (err: any) {
+      const message = err?.message ?? "Error al subir el archivo";
+      toast.error(message)
+    } finally {
+      setUploading(false);
+    }
+  };
   const toggleEvidence = (taskId: string) => {
     setExpandedEvidence(prev => {
       const next = new Set(prev);
@@ -428,7 +545,8 @@ export function ProjectDetailPage() {
                     </div>
 
                     <p className="text-xs text-gray-500 mt-2">
-                      Creada: {task.createdAt.toLocaleDateString()}
+
+                      : {task.createdAt.toLocaleDateString()}
                     </p>
                     {/*Evidencias agregadas */}
                     <button
@@ -451,47 +569,59 @@ export function ProjectDetailPage() {
                       }
                     </button>
                     {isOpen && (
-                      <div className='mt-3 space-y-2'>
-                        {task.evidences?.map(evidence => (
-                          < div
-                            key={evidence.id}
-                            className='relative border rounded-lg overflow-hidden bg-white p-3'>
-                            <div>
-                              <div className='flex items-start justify-between'>
-                                <p className='font-medium text-sm'>
-                                  {evidence.fileName}
-                                </p>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => deleteEvidence(String(evidence.id))}
-                                >
-                                  <Trash2 className='w-4 h-4 text-red-500' />
-                                </Button>
-                              </div>
-                              <div className='text-xs text-gray-500 space-y-1'>
-                                {evidence.uploadedBy && (
-                                  <p>Subido por: {evidence.uploadedBy}</p>
-                                )}
+                      <div className="mt-3 space-y-3">
 
-                                {evidence.startDate && (
-                                  <p>Fecha: {" "}{new Date(evidence.startDate).toLocaleDateString()}</p>
-                                )}
-                              </div>
-                            </div>
+                        {/* Agregar evidencia */}
+                        <div className="border rounded-lg p-3 bg-gray-50">
+                          <Label htmlFor={`evidence-${task.id}`}>
+                            Adjuntar evidencia
+                          </Label>
 
-                            <div className='flex gap-2'>
-                              {evidence.url && (
-                                <a
-                                  href={evidence.url}
-                                  target='_blank'
-                                  rel='noopener noreferrer'
+                          <Input
+                            id={`evidence-${task.id}`}
+                            type="file"
+                            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                            onChange={(e) => handleUploadEvidence(task.id, e)}
+                            multiple
+                          />
+                        </div>
 
-                                ></a>
+                        {/* Evidencias existentes */}
+                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fotos y Documentos</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {task.evidences?.map(evidence => (
+                            <div
+                              key={evidence.id}
+                              className='border rounded-lg p-3 bg-white'
+                            >
+
+                              {isImageEvidence(evidence) ? (
+                                <div className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 border">
+                                  <img
+                                    src={resolveEvidenceUrl(evidence)}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  {/* Overlay */}
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-end">
+                                    <div className="w-full p-2 translate-y-full group-hover:translate-y-0 transition-transform">
+                                      <p className="text-white text-xs truncate">{evidence.fileName}</p>
+                                      <p className="text-white text-xs truncate">`` </p>
+                                      <p className="text-white/70 text-xs">{evidence.size ? formatFileSize(evidence.size) : ''}</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => handleDeleteTask(String(evidence.id))}
+                                    className="absolute top-2 right-2 z-20 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center  transition-opacity hover:bg-red-600"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <a href={resolveEvidenceUrl(evidence)}>{evidence.fileName}</a>
                               )}
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

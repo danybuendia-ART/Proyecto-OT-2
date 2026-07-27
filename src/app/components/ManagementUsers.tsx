@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { getUsers, changePermiso, activeUser } from '../lib/storage';
 import { Profile } from '../lib/types';
-import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -144,7 +143,7 @@ export function ManagementUsers() {
                                                     }
                                                 >
                                                     <option value="1">Administrador</option>
-                                                    <option value="2">Usuario</option>
+                                                    <option value="2">Cliente</option>
                                                     <option value="3">Supervisor</option>
                                                 </select>
                                             </div>

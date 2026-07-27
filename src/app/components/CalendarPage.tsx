@@ -320,7 +320,7 @@ function EvidencePanel({ task, project, colorIdx, onClose, onRefresh }: Evidence
           {/* Image gallery */}
           {images.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fotos e imágenes</h4>
+              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Fotos y Documentos</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {images.map((item: TaskEvidence, index: number) => {
                   const url = resolveEvidenceUrl(item);

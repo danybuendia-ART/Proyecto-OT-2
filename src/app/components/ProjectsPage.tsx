@@ -261,114 +261,116 @@ export function ProjectsPage() {
           </CardHeader>
 
           <CardContent>
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="p-3 text-left">Nombre</th>
-                  <th className="p-3 text-left">Descripcion</th>
-                  <th className="p-3 text-left">Prioridad</th>
-                  <th className="p-3 text-left">Estado</th>
-                  <th className="p-3 text-left">Progreso</th>
-                  <th className="p-3 text-left">Responsable</th>
-                  <th className="p-3 text-left">Fecha Creación</th>
-                  <th className="p-3 text-left">Fecha Modificación</th>
-                  <th className="p-3 text-left">Fecha Aprobado</th>
-                </tr>
-              </thead>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="p-3 text-left">Nombre</th>
+                    <th className="p-3 text-left">Descripcion</th>
+                    <th className="p-3 text-left">Prioridad</th>
+                    <th className="p-3 text-left">Estado</th>
+                    <th className="p-3 text-left">Progreso</th>
+                    <th className="p-3 text-left">Responsable</th>
+                    <th className="p-3 text-left">Fecha Creación</th>
+                    <th className="p-3 text-left">Fecha Modificación</th>
+                    <th className="p-3 text-left">Fecha Aprobado</th>
+                  </tr>
+                </thead>
 
-              <tbody>
-                {projectsPrioritys.map((project) => {
-                  const completedTasksPriority = project.tasks.filter(
-                    (task) => task.completed
-                  ).length;
+                <tbody>
+                  {projectsPrioritys.map((project) => {
+                    const completedTasksPriority = project.tasks.filter(
+                      (task) => task.completed
+                    ).length;
 
-                  const totalTasksPriority = project.tasks.length;
+                    const totalTasksPriority = project.tasks.length;
 
-                  const progressPriority =
-                    totalTasksPriority > 0
-                      ? (completedTasksPriority / totalTasksPriority) * 100
-                      : 0;
+                    const progressPriority =
+                      totalTasksPriority > 0
+                        ? (completedTasksPriority / totalTasksPriority) * 100
+                        : 0;
 
-                  return (
-                    <tr
-                      key={project.id}
-                      className="cursor-pointer hover:bg-amber-100"
-                      onClick={() => navigate(`/project/${project.id}`)}
-                    >
-                      <td className="p-3 font-medium">
-                        {project.name}
-                      </td>
-
-                      <td className="p-3 font-medium">
-                        {project.description}
-                      </td>
-
-                      <td
-                        className="p-3 text-center"
-                        onClick={(e) => e.stopPropagation()}
+                    return (
+                      <tr
+                        key={project.id}
+                        className="cursor-pointer hover:bg-amber-100"
+                        onClick={() => navigate(`/project/${project.id}`)}
                       >
-                        <Checkbox
-                          checked={project.priority}
-                          onCheckedChange={async (checked) => {
-                            const response = await changePriority(
-                              project.id,
-                              checked
-                            );
+                        <td className="p-3 font-medium">
+                          {project.name}
+                        </td>
 
-                            await loadProjects();
-                            toast.success(response);
-                          }}
-                        />
-                      </td>
+                        <td className="p-3 font-medium">
+                          {project.description}
+                        </td>
 
-                      <td className="p-3">
-                        <Badge
-                          className={`flex w-fit items-center gap-1 ${getStatusColor(
-                            project.status
-                          )}`}
+                        <td
+                          className="p-3 text-center"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          {getStatusIcon(project.status)}
-                          {getStatusLabel(project.status)}
-                        </Badge>
-                      </td>
+                          <Checkbox
+                            checked={project.priority}
+                            onCheckedChange={async (checked) => {
+                              const response = await changePriority(
+                                project.id,
+                                checked
+                              );
 
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-28 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${progressPriority}%` }}
-                            />
+                              await loadProjects();
+                              toast.success(response);
+                            }}
+                          />
+                        </td>
+
+                        <td className="p-3">
+                          <Badge
+                            className={`flex w-fit items-center gap-1 ${getStatusColor(
+                              project.status
+                            )}`}
+                          >
+                            {getStatusIcon(project.status)}
+                            {getStatusLabel(project.status)}
+                          </Badge>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-28 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full"
+                                style={{ width: `${progressPriority}%` }}
+                              />
+                            </div>
+
+                            <span className="text-sm">
+                              {completedTasksPriority}/{totalTasksPriority}
+                            </span>
                           </div>
+                        </td>
 
-                          <span className="text-sm">
-                            {completedTasksPriority}/{totalTasksPriority}
-                          </span>
-                        </div>
-                      </td>
+                        <td className="p-3">
+                          {project.employee ?? "----"}
+                        </td>
 
-                      <td className="p-3">
-                        {project.employee ?? "----"}
-                      </td>
-
-                      <td className="p-3">
-                        {project.createdAt.toLocaleDateString()}
-                      </td>
-                      <td className="p-3">
-                        {project.modificationDate
-                          ? new Date(project.modificationDate).toLocaleString()
-                          : "----"}
-                      </td>
-                      <td className="p-3">
-                        {project.approvedDate
-                          ? new Date(project.approvedDate).toLocaleString()
-                          : "----"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <td className="p-3">
+                          {project.createdAt.toLocaleDateString()}
+                        </td>
+                        <td className="p-3">
+                          {project.modificationDate
+                            ? new Date(project.modificationDate).toLocaleString()
+                            : "----"}
+                        </td>
+                        <td className="p-3">
+                          {project.approvedDate
+                            ? new Date(project.approvedDate).toLocaleString()
+                            : "----"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}

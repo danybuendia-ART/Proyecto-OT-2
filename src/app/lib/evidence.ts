@@ -55,7 +55,7 @@ export const addEvidence = (taskId: string, item: Omit<EvidenceItem, 'id' | 'upl
 };
 
 export const deleteEvidence = async (evidenceId: string) => {
-  console.log("envio de datos al eliminar: ", {action: "deleteEvidence", evidenceId});
+  
   await apiRequest("actionEvidences", {action: "DeleteEvidences", idTask : evidenceId}, "POST")
 };
 

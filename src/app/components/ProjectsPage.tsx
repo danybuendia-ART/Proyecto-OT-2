@@ -22,6 +22,8 @@ export function ProjectsPage() {
     name: '',
     description: '',
     status: 'active' as Project['status'],
+    quantity: 0,
+    unit: '',
     employee: "",
     priority: false
   });
@@ -208,6 +210,27 @@ export function ProjectsPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <div>
+                    <Label htmlFor="Cantidad">Cantidad</Label>
+                    <Input
+                      id="Cantidad"
+                      type="number"
+                      min="0" step="0.01"
+                      placeholder="Ingrese la cantidad"
+                      value={newProject.quantity}
+                      onChange={(e) => setNewProject({ ...newProject, quantity: Number(e.target.value) })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="Unidad">Unidad</Label>
+                    <Input id="Unidad" type="text" placeholder="Ingrese la unidad" />
+
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50">

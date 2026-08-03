@@ -109,6 +109,8 @@ export const addProject = async (project: CreateProjectDto) => {
     fk_usuario: currentUser?.id,
     employee: project.employee,
     priority: project.priority,
+    quantity: project.quantity,
+    unit : project.unit
   }
 
   const response: any = await apiRequest("proyectos", informacion, "POST");

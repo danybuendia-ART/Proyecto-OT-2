@@ -47,6 +47,7 @@ export interface Project {
 
   modificationDate?: string;
   approvedDate?: string;
+  Cantidad?:Number;
 }
 
 export interface CreateProjectDto {
@@ -55,6 +56,8 @@ export interface CreateProjectDto {
   status: Project['status'];
   employee: string;
   priority: Boolean
+  quantity: number;
+  unit: string;
 }
 
 export type MaterialPriority = 'urgente' | 'alta' | 'normal' | 'baja';

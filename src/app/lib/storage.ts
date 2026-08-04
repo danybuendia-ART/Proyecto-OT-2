@@ -53,6 +53,7 @@ const parseProject = (p: any): Project => ({
   approvedDate: p.approvedDate,
   projectQuantity: p.quantity,
   projectUnit: p.unit,
+  projectComments: p.comment,
 });
 
 const normalizeProjectsResponse = (response: any): any[] => {
@@ -131,6 +132,34 @@ export const updateProject = async (id: string, updates: Partial<Project>) => {
   const status = updates.status;
 
   await apiRequest("proyectos", { id, updates, action: "modifyStatus" }, "POST")
+};
+
+export const updateProjectDetails = async (
+  id: string,
+  updates: {
+    name?: string;
+    description?: string;
+    status?: Project['status'];
+    employee?: string;
+    priority?: boolean;
+    quantity?: number;
+    unit?: string;
+    projectComments?: string;
+  }
+) => {
+  try {
+    const response: any = await apiRequest('proyectos', {
+      action: 'editProject',
+      id,
+      updates,
+    }, 'POST');
+
+    const decryptedResponse = decryptData(response);
+    return decryptedResponse?.message ?? null;
+  } catch (error) {
+    console.error('Error updating project:', error);
+    return null;
+  }
 };
 
 export const changePriority = async (id: string, priority: boolean | string) => {

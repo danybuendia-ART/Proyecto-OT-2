@@ -50,6 +50,7 @@ export interface Project {
   Cantidad?:Number;
   projectQuantity?: number;
   projectUnit?: string;
+  projectComments?: string;
 }
 
 export interface CreateProjectDto {

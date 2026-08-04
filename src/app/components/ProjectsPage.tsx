@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { fetchProjects, getProjects, addProject, deleteProject, getEmployees, updateProject, changePriority } from '../lib/storage';
+import { fetchProjects, getProjects, addProject, deleteProject, getEmployees, updateProject, changePriority, updateProjectDetails } from '../lib/storage';
 import { Project, Employee, CreateProjectDto } from '../lib/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -11,13 +11,17 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Plus, FolderOpen, Trash2, CheckCircle2, Clock, PauseCircle, Flame, ChevronRight } from 'lucide-react';
+import { Plus, FolderOpen, Trash2, CheckCircle2, Clock, PauseCircle, Flame, ChevronRight, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogDetails, setIsDialogDetails] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editingProjectOriginEmployee, setEditingProjectOriginEmployee] = useState('');
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -26,6 +30,16 @@ export function ProjectsPage() {
     unit: '',
     employee: "",
     priority: false
+  });
+  const [editingProject, setEditingProject] = useState({
+    name: '',
+    description: '',
+    status: 'active' as Project['status'],
+    quantity: 0,
+    unit: '',
+    employee: '',
+    priority: false,
+    projectComments: ''
   });
   const navigate = useNavigate();
 
@@ -40,6 +54,29 @@ export function ProjectsPage() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!editingProjectId || !isEditDialogOpen) return;
+
+    const currentProject = projects.find((project) => project.id === editingProjectId);
+    if (!currentProject) return;
+
+    const selectedEmployee = employees.find(
+      (employee) => employee.id === currentProject.employee || employee.name === currentProject.employee
+    );
+    const desiredEmployeeValue = selectedEmployee?.id ?? currentProject.employee ?? '';
+
+    setEditingProject((prev) => {
+      if (prev.employee && prev.employee !== editingProjectOriginEmployee) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        employee: desiredEmployeeValue,
+      };
+    });
+  }, [projects, employees, editingProjectId, isEditDialogOpen, editingProjectOriginEmployee]);
 
   const loadProjects = async () => {
     const data = await fetchProjects();
@@ -65,6 +102,73 @@ export function ProjectsPage() {
       deleteProject(id);
       loadProjects();
       toast.success('Proyecto eliminado');
+    }
+  };
+
+  const handleOpenEditDialog = (project: Project) => {
+    const selectedEmployee = employees.find(
+      (employee) => employee.id === project.employee || employee.name === project.employee
+    );
+    const initialEmployeeValue = selectedEmployee?.id ?? project.employee ?? '';
+
+    setEditingProjectId(project.id);
+    setEditingProjectOriginEmployee(initialEmployeeValue);
+    setEditingProject({
+      name: project.name,
+      description: project.description,
+      status: project.status,
+      quantity: project.projectQuantity ?? 0,
+      unit: project.projectUnit ?? '',
+      employee: initialEmployeeValue,
+      priority: project.priority,
+      projectComments: project.projectComments ?? ''
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingProjectId) return;
+
+    try {
+      const response = await updateProjectDetails(editingProjectId, {
+        name: editingProject.name,
+        description: editingProject.description,
+        status: editingProject.status,
+        quantity: editingProject.quantity,
+        unit: editingProject.unit,
+        employee: editingProject.employee,
+        priority: editingProject.priority,
+        projectComments: editingProject.projectComments
+      });
+
+      setProjects((prev) =>
+        prev.map((project) =>
+          project.id === editingProjectId
+            ? {
+              ...project,
+              name: editingProject.name,
+              description: editingProject.description,
+              status: editingProject.status,
+              projectQuantity: editingProject.quantity,
+              projectUnit: editingProject.unit,
+              employee: editingProject.employee,
+              priority: editingProject.priority,
+              projectComments: editingProject.projectComments,
+              modificationDate: new Date().toISOString()
+            }
+            : project
+        )
+      );
+
+      setIsEditDialogOpen(false);
+      await loadProjects();
+      toast.success(response ?? 'Proyecto actualizado');
+
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al actualizar proyecto');
     }
   };
 
@@ -228,13 +332,13 @@ export function ProjectsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="Unidad">Unidad</Label>
-                    <Input 
-                    id="Unidad" 
-                    type="text" 
-                    placeholder="Ingrese la unidad"
-                    value={newProject.unit}
-                    onChange={(e) => setNewProject({ ...newProject, unit: e.target.value })}
-                    required
+                    <Input
+                      id="Unidad"
+                      type="text"
+                      placeholder="Ingrese la unidad"
+                      value={newProject.unit}
+                      onChange={(e) => setNewProject({ ...newProject, unit: e.target.value })}
+                      required
                     />
 
                   </div>
@@ -281,6 +385,151 @@ export function ProjectsPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Proyecto</DialogTitle>
+            <DialogDescription>
+              Actualiza los datos del proyecto seleccionado
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateProject} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nombre del Proyecto</Label>
+              <Input
+                id="edit-name"
+                value={editingProject.name}
+                onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Descripción</Label>
+              <Textarea
+                id="edit-description"
+                value={editingProject.description}
+                onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-status">Estado</Label>
+                <Select
+                  required
+                  value={editingProject.status}
+                  onValueChange={(value: Project['status']) =>
+                    setEditingProject({ ...editingProject, status: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="completed">Completado</SelectItem>
+                    <SelectItem value="on-hold">En Pausa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-responsible">Responsable</Label>
+                <select
+                  id="edit-responsible"
+                  className="w-full border rounded p-2"
+                  value={editingProject.employee}
+                  onChange={(e) =>
+                    setEditingProject((prev) => ({
+                      ...prev,
+                      employee: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Seleccionar...</option>
+                  {employees.map((employee) => (
+                    <option key={employee.id} value={employee.id}>
+                      {employee.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-quantity">Cantidad</Label>
+                <Input
+                  id="edit-quantity"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Ingrese la cantidad"
+                  value={editingProject.quantity}
+                  onChange={(e) => setEditingProject({ ...editingProject, quantity: Number(e.target.value) })}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-unit">Unidad</Label>
+                <Input
+                  id="edit-unit"
+                  type="text"
+                  placeholder="Ingrese la unidad"
+                  value={editingProject.unit}
+                  onChange={(e) => setEditingProject({ ...editingProject, unit: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-comments">Comentarios o Justificación</Label>
+              <Textarea
+                id="edit-comments"
+                value={editingProject.projectComments}
+                onChange={(e) => setEditingProject({ ...editingProject, projectComments: e.target.value })}
+                placeholder="Agrega comentarios o justificación del proyecto"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50">
+              <Checkbox
+                id="edit-priority"
+                checked={editingProject.priority}
+                onCheckedChange={(checked) =>
+                  setEditingProject({
+                    ...editingProject,
+                    priority: checked === true,
+                  })
+                }
+                className="border-amber-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+              />
+
+              <div>
+                <Label
+                  htmlFor="edit-priority"
+                  className="cursor-pointer flex items-center gap-1.5 font-medium"
+                >
+                  <Flame className="w-4 h-4 text-amber-500" />
+                  Proyecto prioritario
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">Guardar Cambios</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {projectsPrioritys.length > 0 && (
         <Card className="border-amber-300 bg-amber-50">
           <CardHeader>
@@ -299,6 +548,7 @@ export function ProjectsPage() {
                     <th className="p-3 text-left">Descripcion</th>
                     <th className="p-3 text-left">Prioridad</th>
                     <th className="p-3 text-left">Estado</th>
+                    <th className="p-3 text-left">Comentarios o Justificación</th>
                     <th className="p-3 text-left">Progreso</th>
                     <th className="p-3 text-left">Cantidad</th>
                     <th className="p-3 text-left">Unidad</th>
@@ -306,6 +556,7 @@ export function ProjectsPage() {
                     <th className="p-3 text-left">Fecha Creación</th>
                     <th className="p-3 text-left">Fecha Modificación</th>
                     <th className="p-3 text-left">Fecha Aprobado</th>
+                    <th className="p-3 text-left">Acciones</th>
                   </tr>
                 </thead>
 
@@ -364,7 +615,11 @@ export function ProjectsPage() {
                             {getStatusLabel(project.status)}
                           </Badge>
                         </td>
-
+                        <td className="p-3">
+                          <div className="text-sm text-gray-600 whitespace-pre-wrap">
+                            {project.projectComments ?? "----"}
+                          </div>
+                        </td>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <div className="w-28 bg-gray-200 rounded-full h-2">
@@ -380,8 +635,8 @@ export function ProjectsPage() {
                           </div>
                         </td>
 
-                      <td className="p-3">{project.projectQuantity ?? "----"}</td>
-                      <td className="p-3">{project.projectUnit ?? "----"}</td>
+                        <td className="p-3">{project.projectQuantity ?? "----"}</td>
+                        <td className="p-3">{project.projectUnit ?? "----"}</td>
 
                         <td className="p-3">
                           {project.employee ?? "----"}
@@ -399,6 +654,21 @@ export function ProjectsPage() {
                           {project.approvedDate
                             ? new Date(project.approvedDate).toLocaleString()
                             : "----"}
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex flex-wrap justify-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEditDialog(project);
+                              }}
+                            >
+                              <Pencil className="w-3 h-3 mr-1" />
+                              Editar
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -430,6 +700,7 @@ export function ProjectsPage() {
                   <th className="p-3 text-left">Descripción</th>
                   <th className="p-3 text-left">Prioridad</th>
                   <th className="p-3 text-left">Estado</th>
+                  <th className="p-3 text-left">Comentarios o Justificación</th>
                   <th className="p-3 text-left">Progreso</th>
                   <th className="p-3 text-left">Cantidad</th>
                   <th className="p-3 text-left">Unidad</th>
@@ -437,7 +708,7 @@ export function ProjectsPage() {
                   <th className="p-3 text-left">Fecha Creación</th>
                   <th className="p-3 text-left">Fecha Modificación</th>
                   <th className="p-3 text-left">Fecha Aprobado</th>
-                  {/*<th className="p-3 text-center">Acciones</th>*/}
+                  <th className="p-3 text-center">Acciones</th>
                 </tr>
               </thead>
 
@@ -487,7 +758,11 @@ export function ProjectsPage() {
                           {getStatusLabel(project.status)}
                         </Badge>
                       </td>
-
+                      <td className="p-3">
+                        <div className="text-sm text-gray-600 whitespace-pre-wrap">
+                          {project.projectComments ?? "----"}
+                        </div>
+                      </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <div className="w-28 bg-gray-200 rounded-full h-2">
@@ -516,6 +791,21 @@ export function ProjectsPage() {
                         {project.approvedDate
                           ? new Date(project.approvedDate).toLocaleString()
                           : "----"}
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex flex-wrap justify-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditDialog(project);
+                            }}
+                          >
+                            <Pencil className="w-3 h-3 mr-1" />
+                            Editar
+                          </Button>
+                        </div>
                       </td>
                       {/*<td className="p-3 text-center">
                         <Button

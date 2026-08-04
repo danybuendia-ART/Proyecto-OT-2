@@ -48,6 +48,8 @@ export interface Project {
   modificationDate?: string;
   approvedDate?: string;
   Cantidad?:Number;
+  projectQuantity?: number;
+  projectUnit?: string;
 }
 
 export interface CreateProjectDto {

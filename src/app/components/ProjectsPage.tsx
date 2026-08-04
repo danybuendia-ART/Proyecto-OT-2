@@ -228,7 +228,14 @@ export function ProjectsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="Unidad">Unidad</Label>
-                    <Input id="Unidad" type="text" placeholder="Ingrese la unidad" />
+                    <Input 
+                    id="Unidad" 
+                    type="text" 
+                    placeholder="Ingrese la unidad"
+                    value={newProject.unit}
+                    onChange={(e) => setNewProject({ ...newProject, unit: e.target.value })}
+                    required
+                    />
 
                   </div>
                 </div>
@@ -293,6 +300,8 @@ export function ProjectsPage() {
                     <th className="p-3 text-left">Prioridad</th>
                     <th className="p-3 text-left">Estado</th>
                     <th className="p-3 text-left">Progreso</th>
+                    <th className="p-3 text-left">Cantidad</th>
+                    <th className="p-3 text-left">Unidad</th>
                     <th className="p-3 text-left">Responsable</th>
                     <th className="p-3 text-left">Fecha Creación</th>
                     <th className="p-3 text-left">Fecha Modificación</th>
@@ -371,6 +380,9 @@ export function ProjectsPage() {
                           </div>
                         </td>
 
+                      <td className="p-3">{project.projectQuantity ?? "----"}</td>
+                      <td className="p-3">{project.projectUnit ?? "----"}</td>
+
                         <td className="p-3">
                           {project.employee ?? "----"}
                         </td>
@@ -419,6 +431,8 @@ export function ProjectsPage() {
                   <th className="p-3 text-left">Prioridad</th>
                   <th className="p-3 text-left">Estado</th>
                   <th className="p-3 text-left">Progreso</th>
+                  <th className="p-3 text-left">Cantidad</th>
+                  <th className="p-3 text-left">Unidad</th>
                   <th className="p-3 text-left">Responsable</th>
                   <th className="p-3 text-left">Fecha Creación</th>
                   <th className="p-3 text-left">Fecha Modificación</th>
@@ -487,6 +501,8 @@ export function ProjectsPage() {
                           </span>
                         </div>
                       </td>
+                      <td className="p-3">{project.projectQuantity ?? "----"}</td>
+                      <td className="p-3">{project.projectUnit ?? "----"}</td>
                       <td className={`p-3`}>{project.employee ?? "----"}</td>
                       <td className="p-3">
                         {project.createdAt.toLocaleDateString()}

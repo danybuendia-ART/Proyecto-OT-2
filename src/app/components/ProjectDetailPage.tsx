@@ -414,9 +414,9 @@ export function ProjectDetailPage() {
                   <Input
                     id="unit"
                     placeholder="ej: horas, kg, m²"
-                    value={newTask.unit}
+                    value={project.projectUnit}
                     onChange={(e) => setNewTask({ ...newTask, unit: e.target.value })}
-                    required
+                    disabled
                   />
                 </div>
                 <div className="space-y-2">

@@ -45,6 +45,7 @@ const parseProject = (p: any): Project => ({
       dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
       assignedTo: t.assignedTo ?? t.asignadoA ?? undefined,
       evidences: Array.isArray(t.evidences) ? t.evidences.map(parseEvidenceItem) : [],
+      comment : t.taskComment ?? '',
     }))
     : [],
   employee: p.employee,
@@ -180,7 +181,6 @@ export const addTask = (projectId: string, task: Omit<Task, 'id' | 'createdAt'>)
   const projects = getProjects();
   const project = projects.find(p => p.id === projectId);
   if (!project) return null;
-
   const newTask: Task = {
     ...task,
     unit: project.projectUnit || task.unit,
@@ -201,7 +201,27 @@ export const updateTask = async (projectId: string, taskId: string, updates: Par
   saveProjects(projects);
 };
 
-export const deleteTask = async (projectId: string, taskId: string) => {
+export const updateTaskDetails = async (
+  projectId: string,
+  taskId: string,
+  updates: Partial<Task> & { comment?: string }
+) => {
+  try {
+    const response: any = await apiRequest(
+      'tasks',
+      { projectId, taskId, updates, action: 'editTask' },
+      'POST'
+    );
+
+    const decryptedResponse = decryptData(response);
+    return decryptedResponse?.message ?? null;
+  } catch (error) {
+    console.error('Error updating task:', error);
+    return null;
+  }
+};
+
+export const deleteTask = async (taskId: string) => {
   try {
     await apiRequest("tasks", { action: "Delete", taskId }, "POST");
   } catch (e) {

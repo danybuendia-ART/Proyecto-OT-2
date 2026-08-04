@@ -21,6 +21,7 @@ export interface Task {
   dueDate?: Date;
   assignedTo?: string;
   evidences?: TaskEvidence[];
+  comment?: string;
 }
 
 export interface Evidence {

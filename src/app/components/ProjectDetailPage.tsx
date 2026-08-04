@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Form } from 'react-router';
-import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees, isImage } from '../lib/storage';
+import { fetchProject, getProject, addTask, updateTask, deleteTask, updateProject, getEmployees, isImage, updateTaskDetails } from '../lib/storage';
 import { deleteEvidence, formatFileSize, MAX_FILE_SIZE } from '../lib/evidence';
 import { apiRequest, apiUploadFile } from '../apiClient';
 import { Employee } from '../lib/types';
@@ -31,7 +31,8 @@ import {
   X,
   Delete,
   Upload,
-  FileText
+  FileText,
+  Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCurrentUser } from '../lib/auth';
@@ -124,6 +125,9 @@ export function ProjectDetailPage() {
     assignedTo: '',
     dueDate: undefined as Date | undefined,
   });
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTaskComment, setEditingTaskComment] = useState('');
+  const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   let totalCompletedQuantity = 0;
@@ -198,7 +202,8 @@ export function ProjectDetailPage() {
       (async () => {
         try {
 
-          const payload = { action: "create", projectId, ...newTask };
+          const payload = { action: "create", projectId, ...newTask, unit: project?.projectUnit };
+          console.log("payload: ", payload)
           await apiRequest('tasks', payload, 'POST');
           toast.success('Tarea creada');
           loadProject();
@@ -219,9 +224,43 @@ export function ProjectDetailPage() {
 
   const handleDeleteTask = async (taskId: string) => {
     if (confirm('¿Estás seguro de eliminar esta tarea?') && projectId) {
-      await deleteEvidence(taskId);
+      await deleteTask(taskId);
       loadProject();
       toast.success('Tarea eliminada');
+    }
+  };
+
+  const handleOpenEditTask = (task: Task) => {
+    setEditingTask(task);
+    setEditingTaskComment('');
+    setIsEditTaskDialogOpen(true);
+  };
+
+  const handleUpdateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!projectId || !editingTask) return;
+
+    try {
+      const response = await updateTaskDetails(projectId, editingTask.id, {
+        title: editingTask.title,
+        description: editingTask.description,
+        quantity: editingTask.quantity,
+        unit: editingTask.unit,
+        completed: editingTask.completed,
+        assignedTo: editingTask.assignedTo,
+        dueDate: editingTask.dueDate,
+        comment: editingTaskComment,
+      });
+
+      setIsEditTaskDialogOpen(false);
+      setEditingTask(null);
+      setEditingTaskComment('');
+      await loadProject();
+      toast.success(response ?? 'Tarea actualizada');
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast.error('Error al actualizar la tarea');
     }
   };
 
@@ -533,7 +572,139 @@ export function ProjectDetailPage() {
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">{task.description}</p>
                       </div>
+                      <Dialog open={isEditTaskDialogOpen} onOpenChange={setIsEditTaskDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenEditTask(task)}
+                          >
+                            <Edit className="w-4 h-4 text-blue-500" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Editar tarea</DialogTitle>
+                            <DialogDescription>
+                              Modifica los datos de la tarea y agrega un comentario opcional.
+                            </DialogDescription>
+                          </DialogHeader>
 
+                          {editingTask && (
+                            <form onSubmit={handleUpdateTask} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-task-title">Título</Label>
+                                <Input
+                                  id="edit-task-title"
+                                  value={editingTask.title}
+                                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                                  required
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-task-description">Descripción</Label>
+                                <Textarea
+                                  id="edit-task-description"
+                                  value={editingTask.description}
+                                  onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                                  required
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-task-dueDate">Fecha límite (para calendario)</Label>
+                                <Input
+                                  id="edit-task-dueDate"
+                                  type="date"
+                                  value={editingTask.dueDate ? editingTask.dueDate.toISOString().split('T')[0] : ''}
+                                  onChange={(e) =>
+                                    setEditingTask({
+                                      ...editingTask,
+                                      dueDate: e.target.value ? new Date(e.target.value + 'T12:00:00') : undefined,
+                                    })
+                                  }
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="edit-task-quantity">Cantidad</Label>
+                                  <Input
+                                    id="edit-task-quantity"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={editingTask.quantity}
+                                    onChange={(e) => setEditingTask({ ...editingTask, quantity: Number(e.target.value) })}
+                                    required
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="edit-task-unit">Unidad</Label>
+                                  <Input
+                                    id="edit-task-unit"
+                                    value={editingTask.unit}
+                                    onChange={(e) => setEditingTask({ ...editingTask, unit: e.target.value })}
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-task-assignedTo">Asignar a</Label>
+                                <select
+                                  id="edit-task-assignedTo"
+                                  className="w-full border rounded-md p-2"
+                                  value={editingTask.assignedTo ?? ''}
+                                  onChange={(e) => setEditingTask({ ...editingTask, assignedTo: e.target.value })}
+                                >
+                                  <option value="">Seleccionar trabajador</option>
+                                  {employees.length > 0
+                                    ? employees.map((worker) => (
+                                      <option key={worker.id} value={worker.name}>
+                                        {worker.name}
+                                      </option>
+                                    ))
+                                    : DEMO_WORKERS.map((worker) => (
+                                      <option key={worker} value={worker}>
+                                        {worker}
+                                      </option>
+                                    ))}
+                                </select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-task-comment">Comentario</Label>
+                                <Textarea
+                                  id="edit-task-comment"
+                                  value={editingTaskComment}
+                                  onChange={(e) => setEditingTaskComment(e.target.value)}
+                                  placeholder="Agrega un comentario para el backend"
+                                />
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  id="edit-task-completed"
+                                  checked={editingTask.completed}
+                                  onCheckedChange={(checked) =>
+                                    setEditingTask({ ...editingTask, completed: checked === true })
+                                  }
+                                />
+                                <Label htmlFor="edit-task-completed">Marcar como completada</Label>
+                              </div>
+
+                              <div className="flex gap-2 justify-end">
+                                <Button type="button" variant="outline" onClick={() => setIsEditTaskDialogOpen(false)}>
+                                  Cancelar
+                                </Button>
+                                <Button type="submit">Guardar cambios</Button>
+                              </div>
+                            </form>
+                          )}
+                        </DialogContent>
+                      </Dialog>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -543,6 +714,13 @@ export function ProjectDetailPage() {
                       </Button>
                     </div>
 
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                      comentario o justificacion:
+                    </div>
+                    <div className="flex items-center gap-4 mt-1 text-sm">
+                      <Textarea readOnly>{task.comment || 'N/A'}</Textarea>
+
+                    </div>
                     <div className="flex items-center gap-4 mt-3 flex-wrap">
                       <Badge variant="outline" className="font-normal">
                         Cantidad: {task.quantity} {task.unit}

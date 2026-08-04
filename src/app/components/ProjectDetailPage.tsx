@@ -327,6 +327,7 @@ export function ProjectDetailPage() {
           <div>
             <h2 className="text-3xl font-semibold">{project.name}</h2>
             <p className="text-gray-500 mt-2">Realizado :  {totalCompletedQuantity} {project.projectUnit} De: {project.projectQuantity} {project.projectUnit}</p>
+            <p className="text-gray-500 mt-2">Faltante: {Math.max(0, Number(project.projectQuantity) - totalCompletedQuantity)} {project.projectUnit}</p>
           </div>
 
           <Select

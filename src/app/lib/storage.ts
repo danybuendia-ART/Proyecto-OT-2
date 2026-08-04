@@ -67,7 +67,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
     const response: any = await apiRequest('proyectos', null, 'GET');
     const projects = normalizeProjectsResponse(response);
 
-    //console.log("datos obtenidos: ", projects.map(parseProject))
+    console.log("datos obtenidos: ", projects.map(parseProject))
     return projects.map(parseProject);
   } catch (error) {
     console.error('Error fetching projects:', error);
@@ -154,6 +154,7 @@ export const addTask = (projectId: string, task: Omit<Task, 'id' | 'createdAt'>)
 
   const newTask: Task = {
     ...task,
+    unit: project.projectUnit || task.unit,
     id: `${projectId}-${Date.now()}`,
     createdAt: new Date(),
   };

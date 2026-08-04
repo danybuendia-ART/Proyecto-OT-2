@@ -126,6 +126,15 @@ export function ProjectDetailPage() {
   });
   const [uploading, setUploading] = useState(false);
 
+  let totalCompletedQuantity = 0;
+  if (project) {
+    totalCompletedQuantity = project.tasks.reduce((sum, task) => {
+      if (task.completed) {
+        return sum + task.quantity;
+      }
+      return sum;
+    }, 0);
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -317,7 +326,7 @@ export function ProjectDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-3xl font-semibold">{project.name}</h2>
-            <p className="text-gray-500 mt-2">{project.description}</p>
+            <p className="text-gray-500 mt-2">Realizado :  {totalCompletedQuantity} {project.projectUnit} De: {project.projectQuantity} {project.projectUnit}</p>
           </div>
 
           <Select
@@ -415,7 +424,6 @@ export function ProjectDetailPage() {
                     id="unit"
                     placeholder="ej: horas, kg, m²"
                     value={project.projectUnit}
-                    onChange={(e) => setNewTask({ ...newTask, unit: e.target.value })}
                     disabled
                   />
                 </div>
@@ -560,7 +568,7 @@ export function ProjectDetailPage() {
 
                     <p className="text-xs text-gray-500 mt-2">
 
-                      : {task.createdAt.toLocaleDateString()}
+                      fecha de creación: {task.createdAt.toLocaleDateString()}
                     </p>
                     {/*Evidencias agregadas */}
                     <button

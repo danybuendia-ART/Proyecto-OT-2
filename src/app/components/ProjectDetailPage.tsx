@@ -579,7 +579,7 @@ export function ProjectDetailPage() {
                             size="icon"
                             onClick={() => handleOpenEditTask(task)}
                           >
-                            <Edit className="w-4 h-4 text-blue-500" />
+                            <Edit className="w-4 h-full text-blue-500" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -718,8 +718,7 @@ export function ProjectDetailPage() {
                       comentario o justificacion:
                     </div>
                     <div className="flex items-center gap-4 mt-1 text-sm">
-                      <Textarea readOnly>{task.comment || 'N/A'}</Textarea>
-
+                      <Textarea readOnly value={task.comment || 'N/A'} />
                     </div>
                     <div className="flex items-center gap-4 mt-3 flex-wrap">
                       <Badge variant="outline" className="font-normal">

@@ -680,7 +680,7 @@ export function ProjectDetailPage() {
                                   id="edit-task-comment"
                                   value={editingTaskComment}
                                   onChange={(e) => setEditingTaskComment(e.target.value)}
-                                  placeholder="Agrega un comentario para el backend"
+                                  placeholder="Agrega un comentario (opcional)"
                                 />
                               </div>
 
